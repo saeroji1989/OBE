@@ -1,0 +1,1834 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Ketercapaian CPL OBE</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS (XLSX) -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; overflow: hidden; }
+        .sidebar-active { color: #3b82f6; border-right: 4px solid #3b82f6; background-color: #eff6ff; }
+        .glass-morphism { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        /* Hide Blogger Elements */
+        #header-wrapper, #sidebar-wrapper, .post-footer, .comments, #footer-wrapper, .blog-pager { display: none !important; }
+        .main-outer { margin: 0 !important; padding: 0 !important; }
+        .post { border: none !important; margin: 0 !important; padding: 0 !important; }
+        
+        /* App Container Fixed Full Screen */
+        #app-container { height: 100vh; position: fixed; top: 0; left: 0; width: 100%; z-index: 9999; background: #f3f4f6; overflow: hidden; display: flex; flex-direction: column; }
+        
+        /* Smooth Transition for Sidebar Submenu */
+        .submenu-enter { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .submenu-open { max-height: 250px; }
+        
+        /* Modal Animation */
+        .modal-overlay { transition: opacity 0.3s ease; opacity: 0; pointer-events: none; }
+        .modal-overlay.modal-active { opacity: 1; pointer-events: auto; }
+        .modal-content { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform: scale(0.95); }
+        .modal-overlay.modal-active .modal-content { transform: scale(1); }
+        
+        /* Toast Notification Animation */
+        @keyframes slideInUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast-active { animation: slideInUp 0.4s ease forwards; }
+        
+        /* Custom Checkbox Size for Mapping */
+        .mapping-checkbox { width: 1.15rem; height: 1.15rem; }
+        
+        /* Custom Scrollbar responsif untuk tabel/sidebar */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body>
+
+<!-- GLOBAL LOADING SCREEN -->
+<div id="global-loading" class="fixed inset-0 z-[99999] bg-[#f3f4f6] flex flex-col items-center justify-center text-gray-800 transition-opacity duration-500">
+    <div class="bg-white p-8 rounded-3xl shadow-xl flex flex-col items-center border border-gray-100">
+        <i class="fas fa-server fa-bounce text-5xl text-blue-600 mb-6 shadow-blue-200"></i>
+        <h2 class="text-2xl font-black mb-2 text-gray-800">Menghubungkan Database</h2>
+        <p id="loading-text" class="text-sm text-gray-500 font-semibold mb-6 text-center">Mengunduh state akademik dari server...</p>
+        <div class="w-48 bg-gray-200 rounded-full h-1.5 overflow-hidden">
+            <div class="bg-blue-600 h-1.5 rounded-full animate-pulse w-full"></div>
+        </div>
+    </div>
+</div>
+
+<div id="app-container">
+    <!-- LAYAR LOGIN -->
+    <div id="login-page" class="flex items-center justify-center h-full w-full overflow-y-auto p-4 hidden">
+        <div class="glass-morphism p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 my-auto">
+            <div class="text-center mb-8">
+                <div class="bg-blue-600 w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-blue-200 overflow-hidden app-brand-icon-login">
+                    <i class="fas fa-graduation-cap text-white text-3xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800 app-brand-name">OBE Tracker v2</h1>
+                <p class="text-gray-500 app-brand-fakultas">Sistem Capaian Pembelajaran Lulusan</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">Username / NIM / NIDN</label>
+                    <input type="text" id="username" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition outline-none" placeholder="Masukkan ID Pengguna">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-600 mb-1">Password</label>
+                    <input type="password" id="password" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition outline-none" placeholder="••••••••">
+                </div>
+                <button onclick="handleLogin()" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transition duration-300">
+                    Masuk Sekarang
+                </button>
+                <div id="login-msg" class="text-center text-sm text-red-500 hidden mt-2">Username atau password salah!</div>
+            </div>
+            <div class="mt-8 text-center text-xs text-gray-400">
+                &copy; 2026 WebApp Builder GAS-Blogger V2 II
+            </div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD UTAMA -->
+    <div id="main-dashboard" class="hidden h-full w-full flex flex-col md:flex-row relative overflow-hidden bg-[#f3f4f6]">
+        
+        <!-- Mobile Header -->
+        <div class="md:hidden flex items-center justify-between bg-white p-4 border-b border-gray-200 z-20 shadow-sm shrink-0 w-full">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 p-1.5 rounded-lg shadow-md shadow-blue-200 w-8 h-8 flex items-center justify-center overflow-hidden app-brand-icon">
+                    <i class="fas fa-chart-line text-white text-sm"></i>
+                </div>
+                <span class="font-bold text-lg text-gray-800 app-brand-name">OBE Panel</span>
+            </div>
+            <button onclick="toggleSidebar()" class="text-gray-500 hover:text-blue-600 focus:outline-none transition-colors p-1">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Overlay -->
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-30 hidden md:hidden transition-opacity duration-300"></div>
+
+        <!-- Sidebar Dinamis -->
+        <div id="sidebar-container" class="fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col h-full shadow-2xl md:shadow-none shrink-0">
+            <div class="p-6 flex items-center justify-between md:justify-start space-x-3 border-b border-gray-50 md:border-none shrink-0">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-blue-600 p-2 rounded-lg shadow-md shadow-blue-200 w-10 h-10 flex items-center justify-center overflow-hidden app-brand-icon">
+                        <i class="fas fa-chart-line text-white"></i>
+                    </div>
+                    <span class="font-bold text-xl text-gray-800 app-brand-name line-clamp-2">OBE Panel</span>
+                </div>
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-red-500 transition-colors p-1">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto custom-scrollbar">
+                <nav id="nav-menu" class="mt-4 space-y-1">
+                    <!-- Menu akan diisi berdasarkan Role -->
+                </nav>
+            </div>
+
+            <div class="p-4 border-t border-gray-100 bg-gray-50/50 shrink-0">
+                <div class="flex items-center space-x-3 mb-4 px-2">
+                    <div id="user-avatar" class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-blue-600">U</div>
+                    <div class="overflow-hidden">
+                        <p id="display-name" class="text-sm font-bold truncate text-gray-800">User</p>
+                        <p id="display-role" class="text-xs text-gray-500 uppercase tracking-wider">Role</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="w-full flex items-center space-x-3 px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg transition">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="font-semibold text-sm">Keluar</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto custom-scrollbar w-full h-full relative p-4 md:p-8">
+            <!-- Header Mobile / Top -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 id="page-title" class="text-2xl font-bold text-gray-800">Ringkasan Capaian</h2>
+                    <p id="page-desc" class="text-gray-500 text-sm mt-1">Selamat datang kembali di dashboard Anda.</p>
+                </div>
+                <div id="loading-spinner" class="hidden">
+                    <i class="fas fa-circle-notch fa-spin text-blue-600 text-2xl"></i>
+                </div>
+            </div>
+
+            <div id="content-view" class="pb-10">
+                <!-- Konten dinamis akan dimuat di sini -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL SYSTEM -->
+<div id="modal-container" class="fixed inset-0 z-[10000] modal-overlay bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden modal-content flex flex-col max-h-[90vh]">
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
+            <h3 id="modal-title" class="font-bold text-gray-800">Formulir Data</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-red-500 transition"><i class="fas fa-times text-lg"></i></button>
+        </div>
+        <div id="modal-body" class="p-6 overflow-y-auto grow custom-scrollbar">
+            <!-- Form content will be injected here -->
+        </div>
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end space-x-3 shrink-0">
+            <button onclick="closeModal()" class="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 transition">Batal</button>
+            <button id="modal-submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition">Simpan Data</button>
+        </div>
+    </div>
+</div>
+
+<!-- DIALOG MODAL (PENGGANTI ALERT & CONFIRM) -->
+<div id="dialog-modal" class="fixed inset-0 z-[12000] modal-overlay bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden modal-content">
+        <div class="p-6 text-center">
+            <div id="dialog-icon" class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-100 mb-4">
+                <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+            </div>
+            <h3 id="dialog-title" class="text-xl font-bold text-gray-900 mb-2">Konfirmasi</h3>
+            <p id="dialog-message" class="text-sm text-gray-500">Apakah Anda yakin?</p>
+        </div>
+        <div class="bg-gray-50 px-4 py-3 flex flex-col sm:flex-row justify-center sm:space-x-3 w-full border-t border-gray-100 gap-2 sm:gap-0">
+            <button id="dialog-cancel" class="w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-bold text-gray-700 hover:bg-gray-50 transition focus:outline-none sm:w-auto sm:text-sm">Batal</button>
+            <button id="dialog-confirm" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-bold text-white hover:bg-red-700 transition focus:outline-none sm:w-auto sm:text-sm">Yakin</button>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div id="toast" class="fixed bottom-10 right-10 z-[11000] hidden">
+    <div class="bg-gray-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 toast-active">
+        <i class="fas fa-check-circle text-green-400 text-lg"></i>
+        <span id="toast-msg" class="text-sm font-semibold tracking-wide">Data berhasil diperbarui!</span>
+    </div>
+</div>
+
+<!-- TEMPLATE SCRIPTS & LOGIC -->
+<script>
+    // --- KONFIGURASI APLIKASI & DETEKSI OTOMATIS ---
+    const GAS_URL = "URL_DEPLOY_GAS_ANDA_DISINI"; 
+    const IS_GAS_ENV = typeof google !== 'undefined' && google.script && google.script.run;
+
+    // --- STATE MANAGEMENT ---
+    let currentUser = null;
+    let activeSubmenu = null;
+    let currentSelectedMkNilai = null;
+
+    let database = { settings: [], users: [], cpl: [], mk: [], cpmk: [], mapping: [], mappingCpmk: [], bobotNilai: [], nilai: [] };
+
+    const DUMMY_DATA = {
+        settings: [
+            {id: 1, namaProdi: 'S1 Pendidikan Administrasi Perkantoran', fakultas: 'Fakultas EKonomika dan Bisnis UNNES', kaprodi: 'Ahmad Saroji, S.Pd., M.Pd.', logoUrl: ''}
+        ],
+        users: [
+            {id: 1, username: 'admin', password: 'edudigital', role: 'admin', name: 'Dr. Administrator'},
+            {id: 2, username: '19800101', password: 'edudigital', role: 'dosen', name: 'Dr. Dosen Pengampu'},
+            {id: 3, username: '2024001', password: 'edudigital', role: 'mahasiswa', name: 'Budi Mahasiswa'},
+            {id: 4, username: '2024002', password: 'edudigital', role: 'mahasiswa', name: 'Siti Aminah'}
+        ],
+        cpl: [
+            {kode: 'CPL-01', deskripsi: 'Mampu menerapkan etika profesi.', target: 70},
+            {kode: 'CPL-02', deskripsi: 'Mampu merancang sistem perangkat lunak.', target: 75}
+        ],
+        mk: [
+            {kode: 'MK001', nama: 'Pemrograman Web', sks: 3, semester: 3},
+            {kode: 'MK002', nama: 'Rekayasa Perangkat Lunak', sks: 4, semester: 4}
+        ],
+        cpmk: [
+            {kode: 'CPMK-1', mk: 'MK001', deskripsi: 'Mampu menjelaskan konsep arsitektur web modern.'},
+            {kode: 'CPMK-2', mk: 'MK001', deskripsi: 'Mampu membangun aplikasi web interaktif.'},
+            {kode: 'CPMK-1', mk: 'MK002', deskripsi: 'Mampu menganalisis kebutuhan sistem.'}
+        ],
+        mapping: [
+            {mk: 'MK001', cpl: 'CPL-01', bobot: 40},
+            {mk: 'MK001', cpl: 'CPL-02', bobot: 60}
+        ],
+        mappingCpmk: [
+            {cpmk: 'CPMK-1', mk: 'MK001', cpl: 'CPL-01', bobot: 50},
+            {cpmk: 'CPMK-2', mk: 'MK001', cpl: 'CPL-02', bobot: 50}
+        ],
+        bobotNilai: [
+            {mk: 'MK001', keaktifan: 10, quis: 15, tugas: 25, uts: 25, uas: 25}
+        ],
+        nilai: [
+            {id: 101, mhs: '2024001', mk: 'MK001', keaktifan: 80, quis: 85, tugas: 90, uts: 88, uas: 85}
+        ]
+    };
+
+    // --- INISIALISASI (FETCH ALL DATA) ---
+    document.addEventListener("DOMContentLoaded", () => {
+        if (IS_GAS_ENV) {
+            // Environment Internal Google Apps Script
+            google.script.run.withSuccessHandler(data => {
+                database = data;
+                tutupLoadingScreen();
+            }).getAllData();
+        } else if (GAS_URL && GAS_URL.startsWith("https://script.google.com/")) {
+            // Environment Eksternal (Blogger) terhubung ke Web App
+            document.getElementById('loading-text').innerText = "Terhubung ke Database Eksternal...";
+            fetch(GAS_URL + "?action=getAllData")
+                .then(response => response.json())
+                .then(data => {
+                    database = data;
+                    tutupLoadingScreen();
+                })
+                .catch(error => {
+                    console.error("Gagal memuat data dari Web App. Memuat DUMMY_DATA", error);
+                    database = JSON.parse(JSON.stringify(DUMMY_DATA));
+                    tutupLoadingScreen();
+                });
+        } else {
+            // Mode Lokal / Demo / Blogger (tanpa integrasi URL valid)
+            database = JSON.parse(JSON.stringify(DUMMY_DATA));
+            tutupLoadingScreen();
+        }
+    });
+
+    function tutupLoadingScreen() {
+        updateBranding(); 
+        const loader = document.getElementById('global-loading');
+        loader.style.opacity = '0';
+        setTimeout(() => {
+            loader.classList.add('hidden');
+            document.getElementById('login-page').classList.remove('hidden');
+        }, 500);
+    }
+
+    // --- BACKGROUND SYNC MECHANISM ---
+    function backgroundSync(table) {
+        let headers = [];
+        if(table === 'settings') headers = ['id', 'namaProdi', 'fakultas', 'kaprodi', 'logoUrl'];
+        else if(table === 'users') headers = ['id', 'username', 'password', 'role', 'name'];
+        else if(table === 'cpl') headers = ['kode', 'deskripsi', 'target'];
+        else if(table === 'mk') headers = ['kode', 'nama', 'sks', 'semester'];
+        else if(table === 'cpmk') headers = ['kode', 'mk', 'deskripsi'];
+        else if(table === 'mapping') headers = ['mk', 'cpl', 'bobot'];
+        else if(table === 'mappingCpmk') headers = ['cpmk', 'mk', 'cpl', 'bobot'];
+        else if(table === 'bobotNilai') headers = ['mk', 'keaktifan', 'quis', 'tugas', 'uts', 'uas'];
+        else if(table === 'nilai') headers = ['id', 'mhs', 'mk', 'keaktifan', 'quis', 'tugas', 'uts', 'uas'];
+
+        if (IS_GAS_ENV) {
+            // Sync Internal Apps Script
+            google.script.run.setTableData(table, headers, database[table]);
+        } else if (GAS_URL && GAS_URL.startsWith("https://script.google.com/")) {
+            // Sync via Fetch ke Web App 
+            // Pastikan doGet/doPost pada backend Apps Script Anda telah mendukung POST ini.
+            fetch(GAS_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain;charset=utf-8',
+                },
+                body: JSON.stringify({
+                    action: 'setTableData',
+                    table: table,
+                    headers: headers,
+                    data: database[table]
+                })
+            }).catch(error => console.error("Sinkronisasi latar belakang gagal", error));
+        }
+    }
+
+    // --- EXCEL CORE FUNCTIONS ---
+    window.downloadTemplate = function(type) {
+        let data = [];
+        let filename = `Template_${type.toUpperCase()}.xlsx`;
+
+        if (type === 'dosen' || type === 'mhs') {
+            data = [{"ID / Username": "", "Nama Lengkap": "", "Password": "edudigital"}];
+        } else if (type === 'cpl') {
+            data = [{"Kode CPL": "CPL-01", "Deskripsi": "", "Target (%)": 70}];
+        } else if (type === 'mk') {
+            data = [{"Kode MK": "MK-01", "Nama MK": "", "SKS": 3, "Semester": 1}];
+        } else if (type === 'cpmk') {
+            data = [{"Kode CPMK": "CPMK-1", "Kode MK": "", "Deskripsi Capaian": ""}];
+        } else if (type === 'nilai') {
+            if (!currentSelectedMkNilai) return showToast("Pilih Mata Kuliah terlebih dahulu!");
+            filename = `Template_Nilai_${currentSelectedMkNilai}.xlsx`;
+            const students = database.users.filter(u => u.role === 'mahasiswa');
+            data = students.map(s => ({
+                "NIM": s.username,
+                "Nama Mahasiswa": s.name,
+                "Keaktifan": 0,
+                "Quis": 0,
+                "Tugas": 0,
+                "UTS": 0,
+                "UAS": 0
+            }));
+            if (data.length === 0) data = [{"NIM": "", "Nama Mahasiswa": "", "Keaktifan": 0, "Quis": 0, "Tugas": 0, "UTS": 0, "UAS": 0}];
+        }
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Data");
+        XLSX.writeFile(wb, filename);
+        showToast("Template berhasil diunduh.");
+    };
+
+    window.handleExcelUpload = function(input, type) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const arr = new Uint8Array(e.target.result);
+            const wb = XLSX.read(arr, { type: 'array' });
+            const sheet = wb.Sheets[wb.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(sheet);
+
+            if (type === 'nilai') {
+                if (!currentSelectedMkNilai) return showToast("Pilih MK terlebih dahulu!");
+                
+                const mkTarget = String(currentSelectedMkNilai).trim();
+                
+                json.forEach(row => {
+                    const nim = String(row["NIM"] || row["nim"] || "").trim();
+                    if (!nim) return;
+                    
+                    // Hapus data nilai lama jika ada duplikat untuk MHS dan MK ini
+                    database.nilai = database.nilai.filter(n => !(String(n.mhs).trim() === nim && String(n.mk).trim() === mkTarget));
+                    
+                    const obj = {
+                        id: Date.now() + Math.random(),
+                        mhs: nim,
+                        mk: mkTarget,
+                        keaktifan: parseFloat(row["Keaktifan"] || 0),
+                        quis: parseFloat(row["Quis"] || 0),
+                        tugas: parseFloat(row["Tugas"] || 0),
+                        uts: parseFloat(row["UTS"] || 0),
+                        uas: parseFloat(row["UAS"] || 0)
+                    };
+                    database.nilai.push(obj);
+                });
+                backgroundSync('nilai');
+                renderInputNilai(currentSelectedMkNilai);
+            } else if (type === 'dosen' || type === 'mhs') {
+                const role = type === 'mhs' ? 'mahasiswa' : 'dosen';
+                json.forEach(row => {
+                    const id = String(row["ID / Username"] || "");
+                    if (!id) return;
+                    if (!database.users.find(u => u.username === id)) {
+                        database.users.push({
+                            id: Date.now() + Math.random(),
+                            username: id,
+                            name: row["Nama Lengkap"] || "User",
+                            password: row["Password"] || "edudigital",
+                            role: role
+                        });
+                    }
+                });
+                backgroundSync('users');
+                switchUserTab('tab-' + type);
+            } else if (type === 'cpl') {
+                json.forEach(row => {
+                    const kode = String(row["Kode CPL"] || "");
+                    if (!kode) return;
+                    if (!database.cpl.find(x => x.kode === kode)) {
+                        database.cpl.push({
+                            kode: kode,
+                            deskripsi: row["Deskripsi"] || "",
+                            target: row["Target (%)"] || 70
+                        });
+                    }
+                });
+                backgroundSync('cpl');
+                switchMasterTab('tab-cpl');
+            } else if (type === 'mk') {
+                json.forEach(row => {
+                    const kode = String(row["Kode MK"] || "");
+                    if (!kode) return;
+                    if (!database.mk.find(x => x.kode === kode)) {
+                        database.mk.push({
+                            kode: kode,
+                            nama: row["Nama MK"] || "",
+                            sks: row["SKS"] || 3,
+                            semester: row["Semester"] || 1
+                        });
+                    }
+                });
+                backgroundSync('mk');
+                switchMasterTab('tab-mk');
+            } else if (type === 'cpmk') {
+                json.forEach(row => {
+                    const kode = String(row["Kode CPMK"] || "");
+                    const mk = String(row["Kode MK"] || "");
+                    if (!kode || !mk) return;
+                    if (!database.cpmk.find(x => x.kode === kode && x.mk === mk)) {
+                        database.cpmk.push({
+                            kode: kode,
+                            mk: mk,
+                            deskripsi: row["Deskripsi Capaian"] || ""
+                        });
+                    }
+                });
+                backgroundSync('cpmk');
+                switchMasterTab('tab-cpmk');
+            }
+            showToast("Data berhasil diimpor!");
+            input.value = "";
+        };
+        reader.readAsArrayBuffer(file);
+    };
+
+    // --- FUNGSI LOGIN ---
+    function handleLogin() {
+        const u = document.getElementById('username').value;
+        const p = document.getElementById('password').value;
+        const btn = document.getElementById('login-btn');
+        const msg = document.getElementById('login-msg');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
+
+        setTimeout(() => {
+            const user = database.users.find(x => String(x.username) === String(u) && String(x.password) === String(p));
+            if(user) {
+                initApp(user);
+            } else {
+                msg.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerText = 'Masuk Sekarang';
+            }
+        }, 400); 
+    }
+
+    function initApp(user) {
+        currentUser = user;
+        
+        document.getElementById('login-page').classList.add('hidden');
+        document.getElementById('main-dashboard').classList.remove('hidden');
+        document.getElementById('display-name').innerText = user.name;
+        document.getElementById('display-role').innerText = user.role;
+        document.getElementById('user-avatar').innerText = user.name.charAt(0);
+        
+        renderMenu();
+        
+        if(user.role === 'admin') loadPage('dashboard');
+        else if(user.role === 'dosen') loadPage('input-nilai');
+        else loadPage('laporan');
+    }
+
+    function logout() {
+        currentUser = null;
+        document.getElementById('main-dashboard').classList.add('hidden');
+        document.getElementById('login-page').classList.remove('hidden');
+        
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+        
+        const btn = document.getElementById('login-btn');
+        btn.disabled = false;
+        btn.innerText = 'Masuk Sekarang';
+        document.getElementById('login-msg').classList.add('hidden');
+    }
+
+    // --- UTILS ---
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toast-msg').innerText = msg;
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 3500);
+    }
+
+    let dialogCallback = null;
+    function showCustomDialog(type, message, callback = null) {
+        const modal = document.getElementById('dialog-modal');
+        const title = document.getElementById('dialog-title');
+        const msg = document.getElementById('dialog-message');
+        const icon = document.getElementById('dialog-icon');
+        const cancelBtn = document.getElementById('dialog-cancel');
+        const confirmBtn = document.getElementById('dialog-confirm');
+
+        msg.innerText = message;
+        dialogCallback = callback;
+
+        if (type === 'alert') {
+            title.innerText = "Perhatian";
+            icon.innerHTML = '<i class="fas fa-info-circle text-blue-600 text-2xl"></i>';
+            icon.className = "mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-blue-100 mb-4";
+            cancelBtn.classList.add('hidden');
+            confirmBtn.innerText = 'Mengerti';
+            confirmBtn.className = "w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-2 bg-blue-600 text-base font-bold text-white hover:bg-blue-700 transition sm:w-auto sm:text-sm";
+        } else if (type === 'confirm') {
+            title.innerText = "Konfirmasi Hapus";
+            icon.innerHTML = '<i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>';
+            icon.className = "mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-100 mb-4";
+            cancelBtn.classList.remove('hidden');
+            confirmBtn.innerText = 'Yakin, Hapus';
+            confirmBtn.className = "w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-2 bg-red-600 text-base font-bold text-white hover:bg-red-700 transition sm:w-auto sm:text-sm";
+        }
+
+        modal.classList.add('modal-active');
+        
+        confirmBtn.onclick = () => {
+            if (dialogCallback) dialogCallback();
+            closeCustomDialog();
+        };
+        cancelBtn.onclick = () => closeCustomDialog();
+    }
+
+    function closeCustomDialog() {
+        document.getElementById('dialog-modal').classList.remove('modal-active');
+        dialogCallback = null;
+    }
+
+    // --- ROUTING & MENU ---
+    function renderMenu() {
+        const menuContainer = document.getElementById('nav-menu');
+        let html = '';
+
+        if(currentUser.role === 'admin') {
+            html = `
+                <button onclick="loadPage('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition group">
+                    <i class="fas fa-home w-5 group-hover:text-blue-500"></i>
+                    <span class="font-semibold text-sm">Beranda</span>
+                </button>
+                
+                <div class="relative group">
+                    <button onclick="toggleSubmenu('user')" class="w-full flex items-center justify-between px-6 py-3 text-gray-600 hover:bg-gray-50 transition">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-users-cog w-5"></i>
+                            <span class="font-semibold text-sm">Manajemen User</span>
+                        </div>
+                        <i id="arrow-user" class="fas fa-chevron-right text-xs transition-transform duration-300"></i>
+                    </button>
+                    <div id="submenu-user" class="submenu-enter bg-gray-50/50">
+                        <div class="w-full flex items-center justify-between pl-14 pr-6 py-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50/50 text-sm transition group cursor-pointer" onclick="loadPage('manajemen-user', 'tab-dosen')">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-chalkboard-teacher text-[10px]"></i>
+                                <span>Data Dosen</span>
+                            </div>
+                            <i onclick="event.stopPropagation(); openMasterForm('dosen')" class="fas fa-plus-circle text-gray-300 hover:text-green-500 transition text-lg" title="Tambah Dosen"></i>
+                        </div>
+                        <div class="w-full flex items-center justify-between pl-14 pr-6 py-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50/50 text-sm transition group cursor-pointer" onclick="loadPage('manajemen-user', 'tab-mhs')">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-user-graduate text-[10px]"></i>
+                                <span>Data Mahasiswa</span>
+                            </div>
+                            <i onclick="event.stopPropagation(); openMasterForm('mhs')" class="fas fa-plus-circle text-gray-300 hover:text-green-500 transition text-lg" title="Tambah Mahasiswa"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative group">
+                    <button onclick="toggleSubmenu('master')" class="w-full flex items-center justify-between px-6 py-3 text-gray-600 hover:bg-gray-50 transition">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-database w-5"></i>
+                            <span class="font-semibold text-sm">Data Master</span>
+                        </div>
+                        <i id="arrow-master" class="fas fa-chevron-right text-xs transition-transform duration-300"></i>
+                    </button>
+                    <div id="submenu-master" class="submenu-enter bg-gray-50/50">
+                        <div class="w-full flex items-center justify-between pl-14 pr-6 py-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50/50 text-sm transition group cursor-pointer" onclick="loadPage('data-master', 'tab-cpl')">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-list-check text-[10px]"></i>
+                                <span>Capaian (CPL)</span>
+                            </div>
+                            <i onclick="event.stopPropagation(); openMasterForm('cpl')" class="fas fa-plus-circle text-gray-300 hover:text-green-500 transition text-lg" title="Tambah CPL"></i>
+                        </div>
+                        <div class="w-full flex items-center justify-between pl-14 pr-6 py-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50/50 text-sm transition group cursor-pointer" onclick="loadPage('data-master', 'tab-mk')">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-book text-[10px]"></i>
+                                <span>Mata Kuliah</span>
+                            </div>
+                            <i onclick="event.stopPropagation(); openMasterForm('mk')" class="fas fa-plus-circle text-gray-300 hover:text-green-500 transition text-lg" title="Tambah Mata Kuliah"></i>
+                        </div>
+                        <div class="w-full flex items-center justify-between pl-14 pr-6 py-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50/50 text-sm transition group cursor-pointer" onclick="loadPage('data-master', 'tab-cpmk')">
+                            <div class="flex items-center space-x-3">
+                                <i class="fas fa-bullseye text-[10px]"></i>
+                                <span>Data CPMK</span>
+                            </div>
+                            <i onclick="event.stopPropagation(); openMasterForm('cpmk')" class="fas fa-plus-circle text-gray-300 hover:text-green-500 transition text-lg" title="Tambah CPMK"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative group">
+                    <button onclick="toggleSubmenu('mapping')" class="w-full flex items-center justify-between px-6 py-3 text-gray-600 hover:bg-gray-50 transition">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-project-diagram w-5"></i>
+                            <span class="font-semibold text-sm">Pemetaan OBE</span>
+                        </div>
+                        <i id="arrow-mapping" class="fas fa-chevron-right text-xs transition-transform duration-300"></i>
+                    </button>
+                    <div id="submenu-mapping" class="submenu-enter bg-gray-50/50">
+                        <button onclick="loadPage('mapping', 'mk-cpl')" class="w-full flex items-center space-x-3 pl-14 py-2.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50/50 text-sm transition">
+                            <i class="fas fa-th text-[10px]"></i>
+                            <span>Mapping MK <i class="fas fa-arrow-right mx-1 text-[8px]"></i> CPL</span>
+                        </button>
+                        <button onclick="loadPage('mapping', 'cpmk-cpl')" class="w-full flex items-center space-x-3 pl-14 py-2.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50/50 text-sm transition">
+                            <i class="fas fa-sitemap text-[10px]"></i>
+                            <span>Mapping CPMK <i class="fas fa-arrow-right mx-1 text-[8px]"></i> CPL</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="loadPage('input-nilai')" id="nav-input-nilai" class="w-full flex items-center space-x-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition group">
+                    <i class="fas fa-edit w-5 group-hover:text-blue-500"></i>
+                    <span class="font-semibold text-sm">Input Nilai</span>
+                </button>
+                <button onclick="loadPage('laporan')" id="nav-laporan" class="w-full flex items-center space-x-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition group">
+                    <i class="fas fa-file-medical-alt w-5 group-hover:text-blue-500"></i>
+                    <span class="font-semibold text-sm">Laporan CPL</span>
+                </button>
+
+                <div class="my-2 border-t border-gray-100"></div>
+
+                <button onclick="loadPage('settings')" id="nav-settings" class="w-full flex items-center space-x-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition group">
+                    <i class="fas fa-cog w-5 group-hover:text-blue-500"></i>
+                    <span class="font-semibold text-sm">Pengaturan Instansi</span>
+                </button>
+            `;
+        } else if (currentUser.role === 'dosen') {
+            html = `
+                <button onclick="loadPage('input-nilai')" id="nav-input-nilai" class="w-full flex items-center space-x-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition group">
+                    <i class="fas fa-edit w-5 group-hover:text-blue-500"></i>
+                    <span class="font-semibold text-sm">Input Nilai</span>
+                </button>
+                <button onclick="loadPage('laporan')" id="nav-laporan" class="w-full flex items-center space-x-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition group">
+                    <i class="fas fa-file-medical-alt w-5 group-hover:text-blue-500"></i>
+                    <span class="font-semibold text-sm">Laporan CPL</span>
+                </button>
+            `;
+        } else if (currentUser.role === 'mahasiswa') {
+            html = `
+                <button onclick="loadPage('laporan')" id="nav-laporan" class="w-full flex items-center space-x-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition group">
+                    <i class="fas fa-user-graduate w-5 group-hover:text-blue-500"></i>
+                    <span class="font-semibold text-sm">Laporanku (CPL)</span>
+                </button>
+            `;
+        }
+        menuContainer.innerHTML = html;
+    }
+
+    function toggleSubmenu(id) {
+        const sub = document.getElementById(`submenu-${id}`);
+        const arrow = document.getElementById(`arrow-${id}`);
+        
+        if (activeSubmenu && activeSubmenu !== id) {
+            const oldSub = document.getElementById(`submenu-${activeSubmenu}`);
+            const oldArrow = document.getElementById(`arrow-${activeSubmenu}`);
+            if(oldSub) oldSub.classList.remove('submenu-open');
+            if(oldArrow) oldArrow.classList.remove('rotate-90');
+        }
+
+        sub.classList.toggle('submenu-open');
+        arrow.classList.toggle('rotate-90');
+        activeSubmenu = sub.classList.contains('submenu-open') ? id : null;
+    }
+
+    let isSidebarOpen = false;
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar-container');
+        const overlay = document.getElementById('sidebar-overlay');
+        isSidebarOpen = !isSidebarOpen;
+        if(isSidebarOpen) {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        }
+    }
+
+    function closeSidebar() {
+        if(window.innerWidth < 768) {
+            const sidebar = document.getElementById('sidebar-container');
+            const overlay = document.getElementById('sidebar-overlay');
+            isSidebarOpen = false;
+            if(sidebar) sidebar.classList.add('-translate-x-full');
+            if(overlay) overlay.classList.add('hidden');
+        }
+    }
+
+    function loadPage(pageId, tabId = null) {
+        closeSidebar(); 
+
+        document.querySelectorAll('#nav-menu button').forEach(b => b.classList.remove('sidebar-active'));
+        let targetNavId = pageId;
+        const activeNav = document.getElementById(`nav-${targetNavId}`);
+        if(activeNav) activeNav.classList.add('sidebar-active');
+
+        const container = document.getElementById('content-view');
+        container.innerHTML = '<div class="text-center py-20"><i class="fas fa-circle-notch fa-spin text-4xl text-blue-300"></i></div>';
+
+        setTimeout(() => {
+            switch(pageId) {
+                case 'dashboard': renderAdminDashboard(); break;
+                case 'manajemen-user': renderManajemenUser(tabId); break; 
+                case 'data-master': renderDataMaster(tabId); break;
+                case 'mapping': renderMappingPage(tabId); break;
+                case 'input-nilai': renderInputNilai(tabId); break;
+                case 'laporan': renderLaporan(); break;
+                case 'settings': renderSettings(); break;
+                default: container.innerHTML = '<p class="text-center p-10 text-gray-400">Halaman belum tersedia</p>';
+            }
+        }, 150); 
+    }
+
+    // --- RENDER PAGES ---
+    function renderAdminDashboard() {
+        document.getElementById('page-title').innerText = "Beranda Admin";
+        document.getElementById('page-desc').innerText = "Ikhtisar capaian Program Studi berdasarkan data evaluasi aktual.";
+        const container = document.getElementById('content-view');
+
+        const mhsList = database.users.filter(u => u.role === 'mahasiswa');
+        
+        const getNilaiAkhir = (mhsId, mkCode) => {
+            let nilaiObj = database.nilai.find(n => String(n.mhs).trim() === String(mhsId).trim() && String(n.mk).trim() === String(mkCode).trim());
+            if(!nilaiObj) return 0;
+            let b = database.bobotNilai.find(x => String(x.mk).trim() === String(mkCode).trim()) || { keaktifan: 0, quis: 0, tugas: 0, uts: 0, uas: 0 };
+            return ((nilaiObj.keaktifan * b.keaktifan) + (nilaiObj.quis * b.quis) + (nilaiObj.tugas * b.tugas) + (nilaiObj.uts * b.uts) + (nilaiObj.uas * b.uas)) / 100;
+        };
+
+        const calcCPL = (mhsId, cplCode) => {
+            let maps = database.mapping.filter(m => m.cpl === cplCode);
+            let totalBobot = 0; let totalScore = 0;
+            maps.forEach(map => {
+                let score = getNilaiAkhir(mhsId, map.mk);
+                if (score > 0) {
+                    totalScore += score * map.bobot;
+                    totalBobot += map.bobot;
+                }
+            });
+            return totalBobot > 0 ? (totalScore / totalBobot) : 0;
+        };
+
+        let chartLabels = database.cpl.map(c => c.kode);
+        let chartData = database.cpl.map(cpl => {
+            let sum = 0; let count = 0;
+            mhsList.forEach(mhs => {
+                let score = calcCPL(mhs.username, cpl.kode);
+                if(score > 0) { sum += score; count++; }
+            });
+            return count > 0 ? parseFloat((sum/count).toFixed(1)) : 0;
+        });
+        
+        let chartTargetData = database.cpl.map(c => c.target || 0);
+
+        let validCpls = chartData.filter(val => val > 0);
+        let overallAvg = validCpls.length > 0 ? (validCpls.reduce((a, b) => a + b, 0) / validCpls.length).toFixed(1) : 0;
+
+        container.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <p class="text-gray-400 text-sm font-semibold">Total Mahasiswa</p>
+                    <h3 class="text-3xl font-bold text-gray-800">${mhsList.length}</h3>
+                    <div class="mt-2 text-green-500 text-xs flex items-center"><i class="fas fa-arrow-up mr-1"></i> Terdaftar</div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <p class="text-gray-400 text-sm font-semibold">Total Mata Kuliah</p>
+                    <h3 class="text-3xl font-bold text-gray-800">${database.mk.length}</h3>
+                    <div class="mt-2 text-blue-500 text-xs flex items-center"><i class="fas fa-book mr-1"></i> Kurikulum</div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <p class="text-gray-400 text-sm font-semibold">Rata-rata CPL Prodi</p>
+                    <h3 class="text-3xl font-bold text-gray-800">${overallAvg}<span class="text-lg font-bold text-gray-500">%</span></h3>
+                    <div class="mt-2 text-orange-500 text-xs flex items-center"><i class="fas fa-chart-bar mr-1"></i> Capaian Keseluruhan</div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
+                <h4 class="font-bold text-gray-700 mb-4">Statistik Capaian Rata-rata Per CPL (%)</h4>
+                <div class="relative w-full h-72">
+                    <canvas id="mainChart"></canvas>
+                </div>
+            </div>
+        `;
+        
+        setTimeout(()=>{
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: { 
+                    labels: chartLabels.length > 0 ? chartLabels : ['Belum ada CPL'], 
+                    datasets: [
+                        { label: 'Rata-rata Capaian Prodi (%)', data: chartData.length > 0 ? chartData : [0], backgroundColor: '#3b82f6', borderRadius: 6 },
+                        { label: 'Target CPL Prodi (%)', data: chartTargetData.length > 0 ? chartTargetData : [0], backgroundColor: 'rgba(248, 113, 113, 0.85)', borderRadius: 6 }
+                    ] 
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { min: 0, max: 100 } },
+                    plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { family: 'Inter', size: 12, weight: 'bold' } } } }
+                }
+            });
+        }, 150);
+    }
+
+    // ==========================================
+    // MODUL MANAJEMEN USER
+    // ==========================================
+    function renderManajemenUser(targetTab = 'tab-dosen') {
+        document.getElementById('page-title').innerText = "Manajemen Pengguna";
+        document.getElementById('page-desc').innerText = "Kelola data akun Dosen dan Mahasiswa.";
+        const container = document.getElementById('content-view');
+        const activeClass = "px-6 py-4 font-bold text-sm border-b-2 border-blue-500 text-blue-600";
+        const inactiveClass = "px-6 py-4 font-bold text-sm text-gray-500 hover:text-blue-400 transition";
+
+        if(!targetTab) targetTab = 'tab-dosen';
+
+        container.innerHTML = `
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="flex border-b overflow-x-auto custom-scrollbar">
+                    <button onclick="switchUserTab('tab-dosen')" id="btn-tab-dosen" class="${targetTab === 'tab-dosen' ? activeClass : inactiveClass} whitespace-nowrap">Data Dosen</button>
+                    <button onclick="switchUserTab('tab-mhs')" id="btn-tab-mhs" class="${targetTab === 'tab-mhs' ? activeClass : inactiveClass} whitespace-nowrap">Data Mahasiswa</button>
+                </div>
+                <div id="user-tab-content" class="p-4 sm:p-6"></div>
+            </div>`;
+        switchUserTab(targetTab);
+    }
+
+    function switchUserTab(id) {
+        document.querySelectorAll('[id^="btn-tab-dosen"], [id^="btn-tab-mhs"]').forEach(btn => btn.className = "px-6 py-4 font-bold text-sm text-gray-500 hover:text-blue-400 transition whitespace-nowrap");
+        document.getElementById(`btn-${id}`).className = "px-6 py-4 font-bold text-sm border-b-2 border-blue-500 text-blue-600 whitespace-nowrap";
+
+        const content = document.getElementById('user-tab-content');
+        let type = id.replace('tab-', ''); 
+        let title = type === 'dosen' ? 'Dosen' : 'Mahasiswa';
+        let idLabel = type === 'dosen' ? 'NIDN' : 'NIM';
+
+        let roleTarget = type === 'mhs' ? 'mahasiswa' : 'dosen';
+        let dataArray = database.users.filter(u => u.role === roleTarget);
+
+        let rowsHtml = '';
+        if(dataArray.length === 0) {
+            rowsHtml = `<tr><td colspan="4" class="px-4 py-10 text-center text-gray-400 italic">Belum ada data ${title.toLowerCase()}.</td></tr>`;
+        } else {
+            rowsHtml = dataArray.map(item => {
+                return `<tr class="hover:bg-gray-50/50 transition">
+                        <td class="px-4 py-4 text-sm font-mono text-blue-600 font-semibold">${item.username}</td>
+                        <td class="px-4 py-4 text-sm font-bold text-gray-700">${item.name}</td>
+                        <td class="px-4 py-4 text-xs"><span class="bg-blue-50 text-blue-600 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider">${item.role}</span></td>
+                        <td class="px-4 py-4 text-right space-x-3">
+                            <button onclick="editMasterData('${type}', '${item.username}')" class="text-gray-300 hover:text-blue-500 transition" title="Edit Data"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteMasterData('${type}', '${item.username}')" class="text-gray-300 hover:text-red-500 transition" title="Hapus Data"><i class="fas fa-trash-alt"></i></button>
+                        </td></tr>`;
+            }).join('');
+        }
+
+        content.innerHTML = `
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                <h4 class="text-lg font-bold text-gray-700 w-full md:w-auto">Daftar ${title}</h4>
+                <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                    <button onclick="openMasterForm('${type}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:bg-blue-700 transition flex-grow md:flex-grow-0 text-center"><i class="fas fa-plus mr-2"></i>Baru</button>
+                    <button onclick="window.downloadTemplate('${type}')" class="text-blue-600 border border-blue-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-50 flex-grow md:flex-grow-0 text-center"><i class="fas fa-download mr-2"></i>Template</button>
+                    <label class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:bg-green-700 cursor-pointer flex-grow md:flex-grow-0 text-center inline-block">
+                        <i class="fas fa-upload mr-2"></i>Upload<input type="file" class="hidden" onchange="window.handleExcelUpload(this, '${type}')">
+                    </label>
+                </div>
+            </div>
+            <div class="overflow-x-auto border border-gray-100 rounded-xl custom-scrollbar">
+                <table class="w-full text-left whitespace-nowrap">
+                    <thead class="bg-gray-50/80 text-[11px] uppercase tracking-widest text-gray-400 font-bold border-b border-gray-100">
+                        <tr><th class="px-4 py-3">${idLabel}</th><th class="px-4 py-3">Nama Lengkap</th><th class="px-4 py-3">Status</th><th class="px-4 py-3 text-right">Aksi</th></tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-gray-50 bg-white">${rowsHtml}</tbody>
+                </table>
+            </div>`;
+    }
+
+    // --- MODUL DATA MASTER ---
+    function renderDataMaster(targetTab = 'tab-cpl') { 
+        document.getElementById('page-title').innerText = "Pengelolaan Data Master";
+        document.getElementById('page-desc').innerText = "Kelola entitas dasar akademik sistem.";
+        const container = document.getElementById('content-view');
+        const activeClass = "px-6 py-4 font-bold text-sm border-b-2 border-blue-500 text-blue-600";
+        const inactiveClass = "px-6 py-4 font-bold text-sm text-gray-500 hover:text-blue-400 transition";
+
+        if(!targetTab || targetTab === 'tab-mhs') targetTab = 'tab-cpl';
+
+        container.innerHTML = `
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="flex border-b overflow-x-auto custom-scrollbar">
+                    <button onclick="switchMasterTab('tab-cpl')" id="btn-tab-cpl" class="${targetTab === 'tab-cpl' ? activeClass : inactiveClass} whitespace-nowrap">Master CPL</button>
+                    <button onclick="switchMasterTab('tab-mk')" id="btn-tab-mk" class="${targetTab === 'tab-mk' ? activeClass : inactiveClass} whitespace-nowrap">Mata Kuliah</button>
+                    <button onclick="switchMasterTab('tab-cpmk')" id="btn-tab-cpmk" class="${targetTab === 'tab-cpmk' ? activeClass : inactiveClass} whitespace-nowrap">Data CPMK</button>
+                </div>
+                <div id="tab-content-area" class="p-4 sm:p-6"></div>
+            </div>`;
+        switchMasterTab(targetTab);
+    }
+    
+    function switchMasterTab(id) {
+        document.querySelectorAll('[id^="btn-tab-cpl"], [id^="btn-tab-mk"], [id^="btn-tab-cpmk"]').forEach(btn => btn.className = "px-6 py-4 font-bold text-sm text-gray-500 hover:text-blue-400 transition whitespace-nowrap");
+        const activeBtn = document.getElementById(`btn-${id}`);
+        if(activeBtn) activeBtn.className = "px-6 py-4 font-bold text-sm border-b-2 border-blue-500 text-blue-600 whitespace-nowrap";
+
+        const content = document.getElementById('tab-content-area');
+        if(!content) return;
+        let type = id.replace('tab-', '');
+        let title = type === 'cpl' ? 'Capaian (CPL)' : (type === 'mk' ? 'Mata Kuliah' : 'Capaian Mata Kuliah (CPMK)');
+
+        let dataArray = [];
+        if(type === 'cpl') dataArray = database.cpl;
+        else if(type === 'mk') dataArray = database.mk;
+        else if(type === 'cpmk') dataArray = database.cpmk;
+
+        let rowsHtml = '';
+        if(dataArray.length === 0) {
+            rowsHtml = `<tr><td colspan="4" class="px-4 py-10 text-center text-gray-400 italic">Belum ada data ${title.toLowerCase()}.</td></tr>`;
+        } else {
+            rowsHtml = dataArray.map(item => {
+                let col1, col2, col3, rowId;
+                if(type === 'cpl') { rowId = col1 = item.kode; col2 = item.deskripsi; col3 = `<span class="bg-green-50 text-green-600 px-2 py-1 rounded text-[10px] font-bold tracking-wider">${item.target || 0}% Target</span>`; }
+                else if(type === 'mk') { rowId = col1 = item.kode; col2 = item.nama; col3 = `<span class="text-gray-600 font-bold">${item.sks} SKS</span> <span class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded text-[10px] ml-2 font-bold uppercase tracking-wider">Smt ${item.semester || '-'}</span>`; }
+                else if(type === 'cpmk') { rowId = `${item.kode}|${item.mk}`; col1 = item.kode; col2 = item.deskripsi; let mkName = database.mk.find(m => m.kode === item.mk)?.nama || item.mk; col3 = `<span class="bg-blue-50 text-blue-600 px-2 py-1 rounded text-[10px] font-bold tracking-wider">${mkName}</span>`; }
+                return `<tr class="hover:bg-gray-50/50 transition">
+                        <td class="px-4 py-4 text-sm font-mono text-blue-600 font-semibold">${col1}</td>
+                        <td class="px-4 py-4 text-sm font-bold text-gray-700 whitespace-normal min-w-[200px]">${col2}</td>
+                        <td class="px-4 py-4 text-xs">${col3}</td>
+                        <td class="px-4 py-4 text-right space-x-3">
+                            <button onclick="editMasterData('${type}', '${rowId}')" class="text-gray-300 hover:text-blue-500 transition" title="Edit Data"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteMasterData('${type}', '${rowId}')" class="text-gray-300 hover:text-red-500 transition" title="Hapus Data"><i class="fas fa-trash-alt"></i></button>
+                        </td></tr>`;
+            }).join('');
+        }
+
+        content.innerHTML = `
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                <h4 class="text-lg font-bold text-gray-700 w-full md:w-auto">Daftar ${title}</h4>
+                <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                    <button onclick="openMasterForm('${type}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:bg-blue-700 transition flex-grow md:flex-grow-0 text-center"><i class="fas fa-plus mr-2"></i>Baru</button>
+                    <button onclick="window.downloadTemplate('${type}')" class="text-blue-600 border border-blue-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-50 flex-grow md:flex-grow-0 text-center"><i class="fas fa-download mr-2"></i>Template</button>
+                    <label class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:bg-green-700 cursor-pointer flex-grow md:flex-grow-0 text-center inline-block">
+                        <i class="fas fa-upload mr-2"></i>Upload<input type="file" class="hidden" onchange="window.handleExcelUpload(this, '${type}')">
+                    </label>
+                </div>
+            </div>
+            <div class="overflow-x-auto border border-gray-100 rounded-xl custom-scrollbar">
+                <table class="w-full text-left whitespace-nowrap">
+                    <thead class="bg-gray-50/80 text-[11px] uppercase tracking-widest text-gray-400 font-bold border-b border-gray-100">
+                        <tr>
+                            <th class="px-4 py-3">${type === 'cpl' ? 'Kode CPL' : (type === 'mk' ? 'Kode MK' : 'Kode CPMK')}</th>
+                            <th class="px-4 py-3">${type === 'cpl' ? 'Deskripsi Capaian' : (type === 'mk' ? 'Nama Mata Kuliah' : 'Deskripsi CPMK')}</th>
+                            <th class="px-4 py-3">${type === 'mk' ? 'Atribut' : (type === 'cpl' ? 'Target' : (type === 'cpmk' ? 'Mata Kuliah' : 'Status'))}</th>
+                            <th class="px-4 py-3 text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-gray-50 bg-white">${rowsHtml}</tbody>
+                </table>
+            </div>`;
+    }
+
+    function renderMappingPage(subId = 'mk-cpl') { 
+        document.getElementById('page-title').innerText = "Pemetaan OBE";
+        document.getElementById('page-desc').innerText = subId === 'mk-cpl' ? "Relasi dan bobot antara Mata Kuliah dengan CPL." : "Relasi antara Capaian Pembelajaran Mata Kuliah (CPMK) dengan CPL.";
+        const container = document.getElementById('content-view');
+        if(database.cpl.length === 0 || database.mk.length === 0) {
+            container.innerHTML = `<div class="bg-yellow-50 border border-yellow-200 p-8 rounded-3xl text-center max-w-2xl mx-auto mt-10"><div class="w-20 h-20 bg-yellow-100 text-yellow-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4"><i class="fas fa-exclamation-triangle"></i></div><h3 class="font-bold text-xl text-yellow-700 mb-2">Data Master Belum Lengkap</h3><p class="text-sm text-yellow-600">Lengkapi Data Master CPL dan Mata Kuliah terlebih dahulu.</p></div>`;
+            return;
+        }
+
+        if(subId === 'mk-cpl') {
+            let thHtml = database.cpl.map(c => `<th class="px-2 py-3 text-center border-l border-gray-200 min-w-[80px]" title="${c.deskripsi}"><div class="font-bold text-gray-700 text-xs">${c.kode}</div><div class="text-[9px] text-gray-400 font-normal uppercase tracking-wider mt-1">Bobot (%)</div></th>`).join('');
+            let trHtml = database.mk.map(m => {
+                let tdHtml = database.cpl.map(c => {
+                    const mapObj = database.mapping.find(map => map.mk === m.kode && map.cpl === c.kode);
+                    const isMapped = !!mapObj; const bobot = mapObj ? mapObj.bobot : '';
+                    return `<td class="px-2 py-3 border-l border-gray-100 text-center"><div class="flex flex-col items-center justify-center gap-1.5"><input type="checkbox" id="chk_mkcpl_${m.kode}_${c.kode}" class="mapping-checkbox rounded text-blue-600 border-gray-300 focus:ring-blue-500 transition cursor-pointer mapping-mkcpl-chk" ${isMapped ? 'checked' : ''} onchange="document.getElementById('bobot_mkcpl_${m.kode}_${c.kode}').classList.toggle('hidden', !this.checked)"><input type="number" id="bobot_mkcpl_${m.kode}_${c.kode}" class="w-14 text-center text-xs p-1 border border-gray-200 rounded focus:ring-1 focus:ring-blue-500 outline-none text-gray-700 font-bold shadow-inner ${isMapped ? '' : 'hidden'}" placeholder="0" value="${bobot}" min="0" max="100"></div></td>`;
+                }).join('');
+                return `<tr class="hover:bg-blue-50/30 transition border-b border-gray-100 last:border-0"><td class="px-6 py-4 bg-white sticky left-0 z-10 border-r border-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] min-w-[200px]"><p class="font-bold text-gray-700 text-sm whitespace-normal w-full md:w-48 leading-tight">${m.nama}</p><p class="text-[10px] text-gray-400 font-mono mt-1">${m.kode} • ${m.sks} SKS</p></td>${tdHtml}</tr>`;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-4 md:p-8">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 w-full"><h3 class="font-bold text-lg text-gray-800"><i class="fas fa-th text-blue-500 mr-2"></i> Matriks MK <i class="fas fa-arrow-right text-gray-400 text-sm mx-1"></i> CPL</h3><button onclick="saveMappingMkCpl()" id="btn-save-mkcpl" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition w-full md:w-auto"><i class="fas fa-save mr-2"></i>Simpan Pemetaan</button></div>
+                    <div class="overflow-x-auto border border-gray-200 rounded-2xl relative shadow-inner custom-scrollbar"><table class="w-full text-left whitespace-nowrap"><thead class="bg-gray-50/90 text-[11px] uppercase font-black tracking-widest text-gray-500 border-b border-gray-200"><tr><th class="px-6 py-4 sticky left-0 bg-gray-50/90 backdrop-blur z-20 border-r border-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] min-w-[200px]">Mata Kuliah</th>${thHtml}</tr></thead><tbody class="divide-y divide-gray-100 bg-white">${trHtml}</tbody></table></div>
+                    <p class="text-xs text-gray-400 mt-4"><i class="fas fa-info-circle mr-1"></i> Centang kotak untuk menghubungkan MK dengan CPL, lalu isi bobot persentase evaluasinya.</p>
+                </div>`;
+        } else if (subId === 'cpmk-cpl') {
+            let thHtml = database.cpl.map(c => `<th class="px-2 py-3 text-center border-l border-gray-200 min-w-[80px]" title="${c.deskripsi}"><div class="font-bold text-gray-700 text-xs">${c.kode}</div><div class="text-[9px] text-gray-400 font-normal uppercase tracking-wider mt-1">Bobot (%)</div></th>`).join('');
+            let trHtml = database.mk.map(m => {
+                let cpmks = database.cpmk.filter(cp => cp.mk === m.kode);
+                if(cpmks.length === 0) return '';
+                let mkHeader = `<tr class="bg-blue-50/50"><td colspan="${database.cpl.length + 1}" class="px-6 py-2 font-bold text-xs text-blue-800 border-l-4 border-blue-500 uppercase tracking-wider sticky left-0 z-10">${m.kode} - ${m.nama}</td></tr>`;
+                let cpmkRows = cpmks.map(cp => {
+                    let tdHtml = database.cpl.map(c => {
+                        const mapObj = database.mappingCpmk.find(map => map.cpmk === cp.kode && map.mk === cp.mk && map.cpl === c.kode);
+                        const isMapped = !!mapObj; const bobot = mapObj ? (mapObj.bobot || '') : '';
+                        return `<td class="px-2 py-3 border-l border-gray-100 text-center"><div class="flex flex-col items-center justify-center gap-1.5"><input type="checkbox" id="chk_cpmkcpl_${cp.mk}_${cp.kode}_${c.kode}" class="mapping-checkbox rounded text-green-600 border-gray-300 focus:ring-green-500 transition cursor-pointer mapping-cpmkcpl-chk" ${isMapped ? 'checked' : ''} onchange="document.getElementById('bobot_cpmkcpl_${cp.mk}_${cp.kode}_${c.kode}').classList.toggle('hidden', !this.checked)"><input type="number" id="bobot_cpmkcpl_${cp.mk}_${cp.kode}_${c.kode}" class="w-14 text-center text-xs p-1 border border-gray-200 rounded focus:ring-1 focus:ring-green-500 outline-none text-gray-700 font-bold shadow-inner ${isMapped ? '' : 'hidden'}" placeholder="0" value="${bobot}" min="0" max="100"></div></td>`;
+                    }).join('');
+                    return `<tr class="hover:bg-green-50/30 transition border-b border-gray-100 last:border-0"><td class="px-6 py-3 bg-white sticky left-0 z-10 border-r border-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] min-w-[250px]"><p class="font-bold text-gray-700 text-sm whitespace-nowrap">${cp.kode}</p><p class="text-[10px] text-gray-500 mt-1 whitespace-normal w-full md:w-56 leading-relaxed">${cp.deskripsi}</p></td>${tdHtml}</tr>`;
+                }).join('');
+                return mkHeader + cpmkRows;
+            }).join('');
+
+            if(!trHtml) {
+                container.innerHTML = `<div class="bg-blue-50 border border-blue-100 p-8 rounded-3xl text-center max-w-2xl mx-auto mt-10"><div class="w-20 h-20 bg-blue-100 text-yellow-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4"><i class="fas fa-sitemap"></i></div><h3 class="font-bold text-xl text-blue-800 mb-2">Data CPMK Belum Tersedia</h3><p class="text-sm text-blue-600">Sistem memerlukan data CPMK pada Data Master sebelum pemetaan dapat dilakukan.</p></div>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-4 md:p-8">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 w-full"><h3 class="font-bold text-lg text-gray-800"><i class="fas fa-sitemap text-green-500 mr-2"></i> Mapping CPMK <i class="fas fa-arrow-right text-gray-400 text-sm mx-1"></i> CPL</h3><button onclick="saveMappingCpmkCpl()" id="btn-save-cpmkcpl" class="bg-green-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-green-200 hover:bg-green-700 transition w-full md:w-auto"><i class="fas fa-save mr-2"></i>Simpan Pemetaan</button></div>
+                    <div class="overflow-x-auto border border-gray-200 rounded-2xl relative shadow-inner custom-scrollbar"><table class="w-full text-left whitespace-nowrap"><thead class="bg-gray-50/90 text-[11px] uppercase font-black tracking-widest text-gray-500 border-b border-gray-200"><tr><th class="px-6 py-4 sticky left-0 bg-gray-50/90 backdrop-blur z-20 border-r border-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] min-w-[250px]">Capaian Mata Kuliah (CPMK)</th>${thHtml}</tr></thead><tbody class="divide-y divide-gray-100 bg-white">${trHtml}</tbody></table></div>
+                    <p class="text-xs text-gray-400 mt-4"><i class="fas fa-info-circle mr-1"></i> Centang kotak untuk menghubungkan CPMK dengan CPL, lalu isi bobot persentase evaluasinya.</p>
+                </div>`;
+        }
+    }
+
+    function saveMappingMkCpl() {
+        const btn = document.getElementById('btn-save-mkcpl'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Menyimpan...';
+        setTimeout(() => {
+            const checkboxes = document.querySelectorAll('.mapping-mkcpl-chk'); let newMapping = [];
+            checkboxes.forEach(chk => {
+                if(chk.checked) {
+                    const parts = chk.id.split('_'); const mkCode = parts[2]; const cplCode = parts[3];
+                    const bobotInput = document.getElementById(`bobot_mkcpl_${mkCode}_${cplCode}`);
+                    newMapping.push({ mk: mkCode, cpl: cplCode, bobot: bobotInput ? parseFloat(bobotInput.value)||0 : 0 });
+                }
+            });
+            database.mapping = newMapping; 
+            backgroundSync('mapping'); 
+            
+            showToast("Matriks relasi dan bobot MK-CPL berhasil disimpan!");
+            btn.disabled = false; btn.innerHTML = '<i class="fas fa-save mr-2"></i>Simpan Pemetaan';
+        }, 300);
+    }
+
+    function saveMappingCpmkCpl() {
+        const btn = document.getElementById('btn-save-cpmkcpl'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Menyimpan...';
+        setTimeout(() => {
+            const checkboxes = document.querySelectorAll('.mapping-cpmkcpl-chk'); let newMappingCpmk = [];
+            checkboxes.forEach(chk => {
+                if(chk.checked) {
+                    const parts = chk.id.split('_'); const mkCode = parts[2]; const cpmkCode = parts[3]; const cplCode = parts[4];
+                    const bobotInput = document.getElementById(`bobot_cpmkcpl_${mkCode}_${cpmkCode}_${cplCode}`);
+                    newMappingCpmk.push({ cpmk: cpmkCode, mk: mkCode, cpl: cplCode, bobot: bobotInput ? parseFloat(bobotInput.value)||0 : 0 });
+                }
+            });
+            database.mappingCpmk = newMappingCpmk; 
+            backgroundSync('mappingCpmk'); 
+            
+            showToast("Pemetaan dan bobot CPMK ke CPL berhasil disimpan!");
+            btn.disabled = false; btn.innerHTML = '<i class="fas fa-save mr-2"></i>Simpan Pemetaan';
+        }, 300);
+    }
+
+    function renderInputNilai(mkCodeParams = null) {
+        document.getElementById('page-title').innerText = "Input Nilai Mata Kuliah";
+        document.getElementById('page-desc').innerText = "Kelola bobot instrumen penelitian dan nilai evaluasi mahasiswa.";
+        const container = document.getElementById('content-view');
+
+        if (database.mk.length === 0) {
+            container.innerHTML = `<div class="bg-yellow-50 border border-yellow-200 p-8 rounded-3xl text-center max-w-2xl mx-auto mt-10"><div class="w-20 h-20 bg-yellow-100 text-yellow-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4"><i class="fas fa-book"></i></div><h3 class="font-bold text-xl text-yellow-700 mb-2">Belum ada Mata Kuliah</h3><p class="text-sm text-yellow-600">Tambahkan Mata Kuliah di Data Master terlebih dahulu.</p></div>`;
+            return;
+        }
+
+        if (mkCodeParams) currentSelectedMkNilai = mkCodeParams;
+        else if (!currentSelectedMkNilai) currentSelectedMkNilai = database.mk[0].kode;
+
+        const activeMk = database.mk.find(m => m.kode === currentSelectedMkNilai);
+        
+        let b = database.bobotNilai.find(x => x.mk === currentSelectedMkNilai);
+        if (!b) b = { keaktifan: 0, quis: 0, tugas: 0, uts: 0, uas: 0 };
+
+        const totalBobot = (b.keaktifan + b.quis + b.tugas + b.uts + b.uas);
+        const isBobotValid = totalBobot === 100;
+
+        let mkOptions = database.mk.map(m => `<option value="${m.kode}" ${m.kode === currentSelectedMkNilai ? 'selected' : ''}>${m.kode} - ${m.nama}</option>`).join('');
+
+        const allMhs = database.users.filter(u => u.role === 'mahasiswa');
+        let tableRows = '';
+
+        if (allMhs.length === 0) {
+            tableRows = `<tr><td colspan="9" class="px-6 py-10 text-center text-gray-400 italic">Belum ada data mahasiswa terdaftar di Manajemen User.</td></tr>`;
+        } else {
+            tableRows = allMhs.map(mhsObj => {
+                const item = database.nilai.find(n => String(n.mhs).trim() === String(mhsObj.username).trim() && String(n.mk).trim() === String(currentSelectedMkNilai).trim());
+                const hasNilai = !!item;
+                
+                const k = hasNilai ? item.keaktifan : 0;
+                const q = hasNilai ? item.quis : 0;
+                const t = hasNilai ? item.tugas : 0;
+                const ut = hasNilai ? item.uts : 0;
+                const ua = hasNilai ? item.uas : 0;
+
+                const totalNilai = ((k * b.keaktifan) + (q * b.quis) + (t * b.tugas) + (ut * b.uts) + (ua * b.uas)) / 100;
+
+                return `
+                <tr class="hover:bg-gray-50/50 transition">
+                    <td class="px-4 py-3 text-sm font-mono text-gray-500">${mhsObj.username}</td>
+                    <td class="px-4 py-3 text-sm font-bold text-gray-700">${mhsObj.name}</td>
+                    <td class="px-4 py-3 text-center text-sm">${hasNilai ? k : '-'}</td>
+                    <td class="px-4 py-3 text-center text-sm">${hasNilai ? q : '-'}</td>
+                    <td class="px-4 py-3 text-center text-sm">${hasNilai ? t : '-'}</td>
+                    <td class="px-4 py-3 text-center text-sm">${hasNilai ? ut : '-'}</td>
+                    <td class="px-4 py-3 text-center text-sm">${hasNilai ? ua : '-'}</td>
+                    <td class="px-4 py-3 text-center font-bold text-blue-600 bg-blue-50/30">${hasNilai ? totalNilai.toFixed(1) : '-'}</td>
+                    <td class="px-4 py-3 text-right space-x-2">
+                        ${isBobotValid ? `<button onclick="editMasterData('nilai', '${mhsObj.username}')" class="text-gray-300 hover:text-blue-500 transition" title="Input/Edit Nilai"><i class="fas fa-edit"></i></button>` : `<button disabled class="text-gray-100 cursor-not-allowed" title="Atur bobot 100% terlebih dahulu"><i class="fas fa-edit"></i></button>`}
+                        ${hasNilai && isBobotValid ? `<button onclick="deleteMasterData('nilai', '${mhsObj.username}')" class="text-gray-300 hover:text-red-500 transition" title="Hapus Nilai"><i class="fas fa-trash-alt"></i></button>` : `<button disabled class="text-gray-100 cursor-not-allowed"><i class="fas fa-trash-alt"></i></button>`}
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        let actionButtonsHtml = '';
+        if (isBobotValid) {
+            actionButtonsHtml = `
+                <button onclick="window.downloadTemplate('nilai')" class="text-blue-600 border border-blue-600 px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-50 transition flex-grow md:flex-grow-0 text-center"><i class="fas fa-download"></i> Template</button>
+                <label class="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md hover:bg-green-700 cursor-pointer transition flex-grow md:flex-grow-0 text-center inline-block">
+                    <i class="fas fa-upload"></i> Upload<input type="file" class="hidden" onchange="window.handleExcelUpload(this, 'nilai')">
+                </label>
+            `;
+        } else {
+            actionButtonsHtml = `
+                <div class="bg-yellow-50 text-yellow-600 px-4 py-2 rounded-xl text-xs font-bold border border-yellow-200 flex items-center shadow-inner w-full md:w-auto">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> Atur & Simpan Bobot 100% untuk Mengisi Nilai
+                </div>
+            `;
+        }
+
+        container.innerHTML = `
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 mb-6 flex items-center space-x-4">
+                <div class="bg-blue-100 text-blue-600 w-10 h-10 rounded-xl flex items-center justify-center font-bold shrink-0"><i class="fas fa-filter"></i></div>
+                <div class="grow">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Pilih Mata Kuliah</label>
+                    <select class="w-full bg-transparent font-bold text-gray-700 outline-none cursor-pointer" onchange="renderInputNilai(this.value)">
+                        ${mkOptions}
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 h-fit">
+                    <h4 class="font-bold text-gray-800 mb-4 flex items-center"><i class="fas fa-sliders-h mr-2 text-blue-500"></i> Bobot Instrumen</h4>
+                    <p class="text-xs text-gray-400 mb-5 leading-relaxed">Tentukan persentase tiap instrumen. Total harus 100%.</p>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center"><span class="text-sm font-semibold text-gray-600">Keaktifan</span><div class="flex items-center w-20 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1"><input type="number" id="b_aktif" class="w-full bg-transparent outline-none text-right text-sm font-bold bobot-input" value="${b.keaktifan}"><span class="text-xs text-gray-400 ml-1">%</span></div></div>
+                        <div class="flex justify-between items-center"><span class="text-sm font-semibold text-gray-600">Quis</span><div class="flex items-center w-20 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1"><input type="number" id="b_quis" class="w-full bg-transparent outline-none text-right text-sm font-bold bobot-input" value="${b.quis}"><span class="text-xs text-gray-400 ml-1">%</span></div></div>
+                        <div class="flex justify-between items-center"><span class="text-sm font-semibold text-gray-600">Tugas Proyek</span><div class="flex items-center w-20 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1"><input type="number" id="b_tugas" class="w-full bg-transparent outline-none text-right text-sm font-bold bobot-input" value="${b.tugas}"><span class="text-xs text-gray-400 ml-1">%</span></div></div>
+                        <div class="flex justify-between items-center"><span class="text-sm font-semibold text-gray-600">UTS</span><div class="flex items-center w-20 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1"><input type="number" id="b_uts" class="w-full bg-transparent outline-none text-right text-sm font-bold bobot-input" value="${b.uts}"><span class="text-xs text-gray-400 ml-1">%</span></div></div>
+                        <div class="flex justify-between items-center"><span class="text-sm font-semibold text-gray-600">UAS</span><div class="flex items-center w-20 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1"><input type="number" id="b_uas" class="w-full bg-transparent outline-none text-right text-sm font-bold bobot-input" value="${b.uas}"><span class="text-xs text-gray-400 ml-1">%</span></div></div>
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center"><span class="text-sm font-black text-gray-800">TOTAL</span><span id="bobot-total-display" class="text-sm font-black text-blue-600">0%</span></div>
+                    <button onclick="saveBobotNilai()" id="btn-save-bobot-nilai" class="w-full mt-4 bg-gray-800 text-white py-2 rounded-xl text-sm font-bold hover:bg-gray-900 transition shadow-lg">Simpan Bobot</button>
+                </div>
+
+                <div class="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col overflow-hidden">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 w-full">
+                        <h4 class="font-bold text-lg text-gray-800 w-full md:w-auto"><i class="fas fa-list-ol mr-2 text-blue-500"></i> Rekapitulasi Nilai</h4>
+                        <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                            ${actionButtonsHtml}
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto border border-gray-100 rounded-xl custom-scrollbar w-full">
+                        <table class="w-full text-left whitespace-nowrap">
+                            <thead class="bg-gray-50/80 text-[11px] uppercase tracking-widest text-gray-500 font-bold border-b border-gray-100">
+                                <tr>
+                                    <th class="px-4 py-3">NIM</th><th class="px-4 py-3">Nama Mahasiswa</th>
+                                    <th class="px-4 py-3 text-center">Aktif<br><span class="text-[9px] font-normal text-blue-500">${b.keaktifan}%</span></th>
+                                    <th class="px-4 py-3 text-center">Quis<br><span class="text-[9px] font-normal text-blue-500">${b.quis}%</span></th>
+                                    <th class="px-4 py-3 text-center">Tugas<br><span class="text-[9px] font-normal text-blue-500">${b.tugas}%</span></th>
+                                    <th class="px-4 py-3 text-center">UTS<br><span class="text-[9px] font-normal text-blue-500">${b.uts}%</span></th>
+                                    <th class="px-4 py-3 text-center">UAS<br><span class="text-[9px] font-normal text-blue-500">${b.uas}%</span></th>
+                                    <th class="px-4 py-3 text-center text-blue-600">Nilai<br>Akhir</th><th class="px-4 py-3 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50 bg-white">${tableRows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const updateSum = () => {
+            const sum = ['aktif', 'quis', 'tugas', 'uts', 'uas'].reduce((acc, val) => acc + (parseFloat(document.getElementById(`b_${val}`).value) || 0), 0);
+            const sumDisplay = document.getElementById('bobot-total-display');
+            sumDisplay.innerText = sum + '%';
+            if(sum !== 100) { sumDisplay.classList.remove('text-blue-600'); sumDisplay.classList.add('text-red-500'); }
+            else { sumDisplay.classList.add('text-blue-600'); sumDisplay.classList.remove('text-red-500'); }
+        };
+        document.querySelectorAll('.bobot-input').forEach(el => el.addEventListener('input', updateSum));
+        updateSum();
+    }
+
+    function saveBobotNilai() {
+        const keaktifan = parseFloat(document.getElementById('b_aktif').value) || 0;
+        const quis = parseFloat(document.getElementById('b_quis').value) || 0;
+        const tugas = parseFloat(document.getElementById('b_tugas').value) || 0;
+        const uts = parseFloat(document.getElementById('b_uts').value) || 0;
+        const uas = parseFloat(document.getElementById('b_uas').value) || 0;
+        const total = keaktifan + quis + tugas + uts + uas;
+
+        if (total !== 100) {
+            showCustomDialog('alert', "Total proporsi bobot saat ini " + total + "%. Total wajib persis 100%.");
+            return;
+        }
+
+        let bIndex = database.bobotNilai.findIndex(x => x.mk === currentSelectedMkNilai);
+        const newData = { mk: currentSelectedMkNilai, keaktifan, quis, tugas, uts, uas };
+        if (bIndex >= 0) database.bobotNilai[bIndex] = newData;
+        else database.bobotNilai.push(newData);
+
+        backgroundSync('bobotNilai'); 
+
+        showToast("Konfigurasi bobot berhasil disimpan.");
+        renderInputNilai(currentSelectedMkNilai);
+    }
+
+    function renderLaporan(selectedMhs = 'ALL') {
+        document.getElementById('page-title').innerText = "Laporan Ketercapaian CPL";
+        document.getElementById('page-desc').innerText = currentUser.role === 'mahasiswa' ? "Analisis capaian profil CPL Anda." : "Analisis dan rekapitulasi Capaian Pembelajaran Lulusan (CPL) secara interaktif.";
+        const container = document.getElementById('content-view');
+
+        if(database.cpl.length === 0 || database.mk.length === 0 || database.mapping.length === 0) {
+            container.innerHTML = `<div class="bg-yellow-50 border border-yellow-200 p-8 rounded-3xl text-center max-w-2xl mx-auto mt-10"><div class="w-20 h-20 bg-yellow-100 text-yellow-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-4"><i class="fas fa-file-contract"></i></div><h3 class="font-bold text-xl text-yellow-700 mb-2">Data Belum Memadai</h3><p class="text-sm text-yellow-600">Laporan CPL membutuhkan Data Master (MK & CPL) serta Pemetaan Matriks yang sudah dikonfigurasi.</p></div>`;
+            return;
+        }
+
+        let mhsList = [];
+        if (currentUser.role === 'mahasiswa') {
+            selectedMhs = currentUser.username;
+            mhsList = database.users.filter(u => u.username === currentUser.username);
+        } else {
+            mhsList = database.users.filter(u => u.role === 'mahasiswa');
+        }
+
+        let mhsOptions = '';
+        if (currentUser.role !== 'mahasiswa') {
+            mhsOptions = `<option value="ALL" ${selectedMhs === 'ALL' ? 'selected' : ''}>Semua Mahasiswa (Rata-rata)</option>`;
+            mhsOptions += mhsList.map(u => `<option value="${u.username}" ${selectedMhs === u.username ? 'selected' : ''}>${u.username} - ${u.name}</option>`).join('');
+        }
+
+        const getNilaiAkhir = (mhsId, mkCode) => {
+            let nilaiObj = database.nilai.find(n => String(n.mhs).trim() === String(mhsId).trim() && String(n.mk).trim() === String(mkCode).trim());
+            if(!nilaiObj) return 0;
+            let b = database.bobotNilai.find(x => String(x.mk).trim() === String(mkCode).trim()) || { keaktifan: 0, quis: 0, tugas: 0, uts: 0, uas: 0 };
+            return ((nilaiObj.keaktifan * b.keaktifan) + (nilaiObj.quis * b.quis) + (nilaiObj.tugas * b.tugas) + (nilaiObj.uts * b.uts) + (nilaiObj.uas * b.uas)) / 100;
+        };
+
+        const calcCPL = (mhsId, cplCode) => {
+            let maps = database.mapping.filter(m => m.cpl === cplCode);
+            let totalBobot = 0; let totalScore = 0;
+            maps.forEach(map => {
+                let score = getNilaiAkhir(mhsId, map.mk);
+                if (score > 0) {
+                    totalScore += score * map.bobot;
+                    totalBobot += map.bobot;
+                }
+            });
+            return totalBobot > 0 ? (totalScore / totalBobot) : 0;
+        };
+
+        let tableRows = '';
+        let chartLabels = database.cpl.map(c => c.kode);
+        let chartData = [];
+        let chartTarget = database.cpl.map(c => c.target || 0);
+
+        if (selectedMhs === 'ALL') {
+            mhsList.forEach(mhs => {
+                let rowHtml = `<td class="px-4 py-3 font-mono text-sm text-gray-500 sticky left-0 bg-white border-r border-gray-100 z-10">${mhs.username}</td><td class="px-4 py-3 text-sm font-bold text-gray-800">${mhs.name}</td>`;
+                database.cpl.forEach(cpl => {
+                    let cplScore = calcCPL(mhs.username, cpl.kode);
+                    let color = cplScore >= (cpl.target || 0) ? 'text-green-600 bg-green-50/50' : 'text-red-600 bg-red-50/50';
+                    rowHtml += `<td class="px-4 py-3 text-center font-bold text-sm ${color}">${cplScore.toFixed(1)}</td>`;
+                });
+                tableRows += `<tr class="border-b border-gray-100 hover:bg-gray-50 transition">${rowHtml}</tr>`;
+            });
+            
+            chartData = database.cpl.map(cpl => {
+                let sum = 0; let count = 0;
+                mhsList.forEach(mhs => {
+                    let score = calcCPL(mhs.username, cpl.kode);
+                    if(score > 0) { sum += score; count++; }
+                });
+                return count > 0 ? (sum/count).toFixed(1) : 0;
+            });
+        } else {
+            let mhs = mhsList.find(m => m.username === selectedMhs);
+            if(mhs) {
+                let rowHtml = `<td class="px-4 py-3 font-mono text-sm text-gray-500 sticky left-0 bg-white border-r border-gray-100 z-10">${mhs.username}</td><td class="px-4 py-3 text-sm font-bold text-gray-800">${mhs.name}</td>`;
+                chartData = database.cpl.map(cpl => {
+                    let cplScore = calcCPL(mhs.username, cpl.kode);
+                    let color = cplScore >= (cpl.target || 0) ? 'text-green-600 bg-green-50/50' : 'text-red-600 bg-red-50/50';
+                    rowHtml += `<td class="px-4 py-3 text-center font-bold text-sm ${color}">${cplScore.toFixed(1)}</td>`;
+                    return cplScore.toFixed(1);
+                });
+                tableRows += `<tr class="border-b border-gray-100 hover:bg-gray-50 transition">${rowHtml}</tr>`;
+            }
+        }
+
+        let achievedCount = 0;
+        let notAchievedList = [];
+        database.cpl.forEach((cpl, index) => {
+            let score = parseFloat(chartData[index] || 0);
+            if (score >= (cpl.target || 0)) achievedCount++;
+            else notAchievedList.push(cpl.kode);
+        });
+        let cplAchievedPercentage = database.cpl.length > 0 ? Math.round((achievedCount / database.cpl.length) * 100) : 0;
+
+        let mkStats = database.mk.map(m => {
+            let sum = 0, count = 0;
+            if (selectedMhs === 'ALL') {
+                mhsList.forEach(mhs => { let s = getNilaiAkhir(mhs.username, m.kode); if(s > 0) { sum += s; count++; } });
+            } else {
+                let s = getNilaiAkhir(selectedMhs, m.kode); if(s > 0) { sum += s; count++; }
+            }
+            return { ...m, avgScore: count > 0 ? (sum/count) : 0 };
+        }).filter(m => m.avgScore > 0);
+
+        let rankedMk = [...mkStats].sort((a, b) => b.avgScore - a.avgScore);
+        let topMkHtml = rankedMk.length > 0 ? rankedMk.slice(0, 5).map((m, i) => `
+            <div class="flex justify-between items-center py-2.5 border-b border-gray-50 last:border-0">
+                <div class="flex items-center space-x-3 w-3/4">
+                    <span class="w-6 h-6 rounded-full shrink-0 ${i===0?'bg-yellow-100 text-yellow-600':(i===1?'bg-gray-200 text-gray-600':(i===2?'bg-orange-100 text-orange-600':'bg-blue-50 text-blue-500'))} flex items-center justify-center text-xs font-bold">${i+1}</span>
+                    <div class="overflow-hidden w-full">
+                        <p class="text-xs font-bold text-gray-700 truncate">${m.kode}</p>
+                        <p class="text-[10px] text-gray-400 truncate w-full">${m.nama}</p>
+                    </div>
+                </div>
+                <span class="text-sm font-black text-gray-800 shrink-0">${m.avgScore.toFixed(1)}</span>
+            </div>
+        `).join('') : '<p class="text-xs text-gray-400 italic text-center py-4">Belum ada data nilai</p>';
+
+        let semesterData = {};
+        mkStats.forEach(m => {
+            let smt = m.semester || 'Lainnya';
+            if(!semesterData[smt]) semesterData[smt] = { sum: 0, count: 0 };
+            semesterData[smt].sum += m.avgScore;
+            semesterData[smt].count++;
+        });
+        let trendLabels = Object.keys(semesterData).sort((a,b) => (parseInt(a)||99) - (parseInt(b)||99)).map(s => s === 'Lainnya' ? s : `Smt ${s}`);
+        let trendValues = Object.keys(semesterData).sort((a,b) => (parseInt(a)||99) - (parseInt(b)||99)).map(s => (semesterData[s].sum / semesterData[s].count).toFixed(1));
+
+        let thCpl = database.cpl.map(c => `<th class="px-4 py-3 text-center" title="${c.deskripsi}">${c.kode}<br><span class="text-[9px] font-normal text-gray-400">Target: ${c.target || 0}%</span></th>`).join('');
+
+        let filterUI = '';
+        if (currentUser.role === 'mahasiswa') {
+            filterUI = `
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 flex flex-col justify-center">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2"><i class="fas fa-user mr-1"></i> Profil Mahasiswa</label>
+                    <div class="w-full px-3 py-2 rounded-xl border border-blue-100 bg-blue-50 text-sm font-bold text-blue-700 overflow-hidden truncate">
+                        ${currentUser.username} - ${currentUser.name}
+                    </div>
+                </div>
+            `;
+        } else {
+            filterUI = `
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 flex flex-col justify-center">
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2"><i class="fas fa-filter mr-1"></i> Filter Analisis</label>
+                    <select class="w-full px-3 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-gray-700 bg-gray-50 cursor-pointer transition" onchange="renderLaporan(this.value)">
+                        ${mhsOptions}
+                    </select>
+                </div>
+            `;
+        }
+
+        container.innerHTML = `
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                ${filterUI}
+                
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xl shrink-0"><i class="fas fa-check-double"></i></div>
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">CPL Tercapai</p>
+                        <h3 class="text-2xl font-black text-gray-800">${cplAchievedPercentage}<span class="text-sm text-gray-500 font-bold">%</span></h3>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 flex flex-col justify-center">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center"><i class="fas fa-exclamation-circle text-red-400 mr-1.5"></i> Belum Tercapai</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        ${notAchievedList.length > 0 ? notAchievedList.map(c => `<span class="bg-red-50 text-red-600 border border-red-100 px-2 py-0.5 rounded text-[10px] font-bold shadow-sm">${c}</span>`).join('') : '<span class="text-xs text-green-500 font-bold flex items-center"><i class="fas fa-star text-yellow-400 mr-1.5"></i> Semua Tercapai!</span>'}
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 flex items-center justify-center">
+                    <button onclick="downloadLaporanCPL()" class="w-full h-full min-h-[3rem] bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition flex items-center justify-center">
+                        <i class="fas fa-file-excel mr-2"></i> Ekspor Excel
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-bold text-gray-800 text-sm"><i class="fas fa-chart-radar text-blue-500 mr-2"></i> Grafik Radar CPL</h4>
+                    </div>
+                    <div class="relative h-56 w-full flex justify-center"><canvas id="cplChart"></canvas></div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                    <h4 class="font-bold text-gray-800 text-sm mb-4"><i class="fas fa-chart-line text-green-500 mr-2"></i> Tren Rata-rata / Semester</h4>
+                    <div class="relative h-56 w-full flex justify-center"><canvas id="trendChart"></canvas></div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col">
+                    <h4 class="font-bold text-gray-800 text-sm mb-4"><i class="fas fa-trophy text-yellow-500 mr-2"></i> Top Mata Kuliah</h4>
+                    <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                        ${topMkHtml}
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 overflow-hidden">
+                <h4 class="font-bold text-lg text-gray-800 mb-4"><i class="fas fa-table text-blue-500 mr-2"></i> Matriks Nilai CPL Mahasiswa</h4>
+                <div class="overflow-x-auto border border-gray-100 rounded-xl relative shadow-inner custom-scrollbar w-full">
+                    <table class="w-full text-left whitespace-nowrap" id="table-laporan-cpl">
+                        <thead class="bg-gray-50/90 text-[11px] uppercase tracking-widest text-gray-500 font-bold border-b border-gray-200">
+                            <tr>
+                                <th class="px-4 py-4 sticky left-0 bg-gray-50 z-20 border-r border-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">NIM</th>
+                                <th class="px-4 py-4">Nama Mahasiswa</th>
+                                ${thCpl}
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50 bg-white">
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        setTimeout(() => {
+            const ctxRadar = document.getElementById('cplChart').getContext('2d');
+            new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [
+                        { label: 'Capaian', data: chartData, backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', pointBackgroundColor: '#3b82f6', borderWidth: 2 },
+                        { label: 'Target', data: chartTarget, backgroundColor: 'rgba(248, 113, 113, 0.1)', borderColor: '#f87171', borderDash: [5, 5], pointBackgroundColor: '#f87171', borderWidth: 2 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { r: { angleLines: { color: 'rgba(0,0,0,0.05)' }, grid: { color: 'rgba(0,0,0,0.05)' }, pointLabels: { font: { family: 'Inter', size: 10, weight: 'bold' }, color: '#6b7280' }, ticks: { min: 0, max: 100, stepSize: 25, backdropColor: 'transparent', color: '#9ca3af' } } },
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
+                }
+            });
+
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                    labels: trendLabels,
+                    datasets: [{
+                        label: 'Rata-rata Nilai',
+                        data: trendValues,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#10b981'
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        y: { min: 0, max: 100, grid: { borderDash: [4, 4] } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }, 150);
+    }
+
+    window.downloadLaporanCPL = function() {
+        const table = document.getElementById('table-laporan-cpl');
+        if(!table) return;
+        
+        const wb = XLSX.utils.table_to_book(table, {sheet: "Laporan_CPL"});
+        XLSX.writeFile(wb, "Rekapitulasi_CPL_OBE.xlsx");
+        showToast("Laporan Excel berhasil diunduh!");
+    };
+
+    // ==========================================
+    // MODUL PENGATURAN INSTANSI
+    // ==========================================
+    function renderSettings() {
+        document.getElementById('page-title').innerText = "Pengaturan Instansi";
+        document.getElementById('page-desc').innerText = "Kelola identitas Program Studi dan Fakultas Anda.";
+        const container = document.getElementById('content-view');
+
+        let st = database.settings && database.settings.length > 0 ? database.settings[0] : { namaProdi: '', fakultas: '', kaprodi: '', logoUrl: '' };
+
+        const defaultLogoSVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239CA3AF'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' /></svg>";
+
+        container.innerHTML = `
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 max-w-4xl">
+                <div class="flex flex-col md:flex-row gap-8">
+                    <div class="w-full md:w-1/3 flex flex-col items-center">
+                        <label class="block text-sm font-bold text-gray-700 mb-4">Logo Instansi</label>
+                        <div class="w-48 h-48 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50 overflow-hidden relative group">
+                            <img id="preview-logo" src="${st.logoUrl || defaultLogoSVG}" class="w-full h-full object-contain ${st.logoUrl ? '' : 'p-8'}" />
+                            <div class="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" onclick="document.getElementById('upload-logo').click()">
+                                <i class="fas fa-camera text-white text-3xl mb-2"></i>
+                                <span class="text-white text-xs font-bold">Ubah Logo</span>
+                            </div>
+                        </div>
+                        <input type="file" id="upload-logo" accept="image/*" class="hidden" onchange="handleLogoChange(this)">
+                        <input type="hidden" id="logo-base64" value="${st.logoUrl || ''}">
+                        <p class="text-[10px] text-gray-400 mt-3 text-center w-full">Klik area di atas untuk mengganti logo. <br>Otomatis disesuaikan ke ukuran ideal.</p>
+                    </div>
+                    <div class="w-full md:w-2/3 space-y-6">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Nama Program Studi</label>
+                            <input type="text" id="f-prodi" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold text-gray-800" placeholder="Contoh: S1 Teknik Informatika" value="${st.namaProdi || ''}">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Fakultas</label>
+                            <input type="text" id="f-fakultas" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold text-gray-800" placeholder="Contoh: Fakultas Ilmu Komputer" value="${st.fakultas || ''}">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Nama Ketua Program Studi</label>
+                            <input type="text" id="f-kaprodi" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold text-gray-800" placeholder="Beserta gelar akademik..." value="${st.kaprodi || ''}">
+                        </div>
+                        <div class="pt-6 border-t border-gray-100 flex justify-end">
+                            <button onclick="saveSettings()" id="btn-save-settings" class="bg-blue-600 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition flex items-center">
+                                <i class="fas fa-save mr-2 text-lg"></i> Simpan Pengaturan Instansi
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    window.handleLogoChange = function(input) {
+        const file = input.files[0];
+        if (!file) return;
+        
+        if (file.size > 2 * 1024 * 1024) {
+            showCustomDialog('alert', "Ukuran gambar terlalu besar! Maksimal disarankan adalah 2MB agar loading tetap cepat.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                // PERBAIKAN: Menyesuaikan resolusi agar aman disimpan dalam 1 sel Google Sheet (Maks 50.000 karakter Base64)
+                const MAX_WIDTH = 120; 
+                const MAX_HEIGHT = 120;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                } else {
+                    if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                let dataUrl = canvas.toDataURL('image/png');
+
+                // Deteksi jika Base64 masih terlalu besar (> 48.000 karakter), gunakan kompresi format JPEG
+                if (dataUrl.length > 48000) {
+                    dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                }
+
+                // Cek final limit database (batas mutlak Google Sheet 50.000)
+                if (dataUrl.length > 50000) {
+                    showCustomDialog('alert', "Detail logo sangat padat/rumit sehingga melebihi batas simpan database. Silakan gunakan file logo yang resolusinya lebih simpel/kecil.");
+                    return;
+                }
+
+                const preview = document.getElementById('preview-logo');
+                preview.src = dataUrl;
+                preview.classList.remove('p-8');
+                document.getElementById('logo-base64').value = dataUrl;
+            }
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    function saveSettings() {
+        const btn = document.getElementById('btn-save-settings');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan...';
+        setTimeout(() => {
+            const newData = {
+                id: 1,
+                namaProdi: document.getElementById('f-prodi').value,
+                fakultas: document.getElementById('f-fakultas').value,
+                kaprodi: document.getElementById('f-kaprodi').value,
+                logoUrl: document.getElementById('logo-base64').value
+            };
+            if (database.settings.length > 0) database.settings[0] = newData;
+            else database.settings.push(newData);
+            backgroundSync('settings');
+            updateBranding();
+            showToast("Pengaturan Instansi berhasil disimpan!");
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save mr-2 text-lg"></i> Simpan Pengaturan Instansi';
+        }, 400);
+    }
+
+    function updateBranding() {
+        let st = database.settings && database.settings.length > 0 ? database.settings[0] : null;
+        if (st) {
+            document.querySelectorAll('.app-brand-name').forEach(el => el.innerText = st.namaProdi || "OBE Tracker v2");
+            document.querySelectorAll('.app-brand-fakultas').forEach(el => el.innerText = st.fakultas || "Sistem Capaian Pembelajaran Lulusan");
+            if (st.logoUrl) {
+                document.querySelectorAll('.app-brand-icon').forEach(el => {
+                    el.innerHTML = `<img src="${st.logoUrl}" class="w-full h-full object-contain" />`;
+                    el.classList.remove('p-1.5', 'p-2');
+                    el.classList.add('bg-transparent');
+                });
+                document.querySelectorAll('.app-brand-icon-login').forEach(el => {
+                    el.innerHTML = `<img src="${st.logoUrl}" class="w-full h-full object-contain" />`;
+                    el.classList.add('bg-transparent');
+                });
+            }
+        }
+    }
+
+    // --- FORM DATA MASTER & NILAI ---
+    function openMasterForm(type, editItem = null) {
+        const isEdit = editItem !== null;
+        const titles = { dosen: isEdit?'Edit Dosen':'Tambah Dosen', mhs: isEdit?'Edit Mhs':'Tambah Mhs', cpl: isEdit?'Edit CPL':'Tambah CPL', mk: isEdit?'Edit MK':'Tambah MK', cpmk: isEdit?'Edit CPMK':'Tambah CPMK', nilai: isEdit?'Edit Nilai':'Input Nilai' };
+        document.getElementById('modal-title').innerText = titles[type];
+        let formHtml = '';
+        if(type === 'mhs' || type === 'dosen') {
+            formHtml = `<div class="space-y-4"><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">ID/NIM/NIDN</label><input type="text" id="f-user" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none text-sm ${isEdit?'bg-gray-100':''}" value="${isEdit?editItem.username:''}" ${isEdit?'readonly':''}></div><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Nama Lengkap</label><input type="text" id="f-name" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none text-sm" value="${isEdit?editItem.name:''}"></div><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Password</label><input type="password" id="f-pass" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none text-sm" value="${isEdit?editItem.password:'edudigital'}"></div></div>`;
+        } else if(type === 'cpl') {
+            formHtml = `<div class="space-y-4"><div class="grid grid-cols-2 gap-4"><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Kode CPL</label><input type="text" id="f-kode" class="w-full px-4 py-3 border rounded-xl ${isEdit?'bg-gray-100':''}" value="${isEdit?editItem.kode:''}" ${isEdit?'readonly':''}></div><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Target (%)</label><input type="number" id="f-target" class="w-full px-4 py-3 border rounded-xl" value="${isEdit?editItem.target:'70'}"></div></div><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Deskripsi</label><textarea id="f-desc" class="w-full px-4 py-3 border rounded-xl h-24">${isEdit?editItem.deskripsi:''}</textarea></div></div>`;
+        } else if(type === 'mk') {
+            formHtml = `<div class="space-y-4"><div class="grid grid-cols-3 gap-4"><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Kode MK</label><input type="text" id="f-kode" class="w-full px-4 py-3 border rounded-xl ${isEdit?'bg-gray-100':''}" value="${isEdit?editItem.kode:''}" ${isEdit?'readonly':''}></div><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">SKS</label><input type="number" id="f-sks" class="w-full px-4 py-3 border rounded-xl" value="${isEdit?editItem.sks:'3'}"></div><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Smt</label><input type="number" id="f-smt" class="w-full px-4 py-3 border rounded-xl" value="${isEdit?editItem.semester:''}"></div></div><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Nama MK</label><input type="text" id="f-name" class="w-full px-4 py-3 border rounded-xl" value="${isEdit?editItem.nama:''}"></div></div>`;
+        } else if(type === 'cpmk') {
+            let mkOptions = database.mk.map(m => `<option value="${m.kode}" ${isEdit && editItem.mk === m.kode ? 'selected' : ''}>${m.kode} - ${m.nama}</option>`).join('');
+            formHtml = `
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Mata Kuliah</label>
+                        <select id="f-mk" class="w-full px-4 py-3 rounded-xl border bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                            <option value="">-- Pilih Mata Kuliah --</option>
+                            ${mkOptions}
+                        </select>
+                    </div>
+                    <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Kode CPMK</label><input type="text" id="f-kode" class="w-full px-4 py-3 rounded-xl border outline-none focus:ring-2 focus:ring-blue-500 text-sm" value="${isEdit?editItem.kode:''}" placeholder="Contoh: CPMK-1"></div>
+                    <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Deskripsi Capaian</label><textarea id="f-desc" class="w-full px-4 py-3 rounded-xl border h-24 outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Jelaskan capaian pembelajaran...">${isEdit?editItem.deskripsi:''}</textarea></div>
+                </div>`;
+        } else if (type === 'nilai') {
+            const b = database.bobotNilai.find(x => String(x.mk).trim() === String(currentSelectedMkNilai).trim()) || { keaktifan: 0, quis: 0, tugas: 0, uts: 0, uas: 0 };
+            const n = isEdit ? (database.nilai.find(x => String(x.mhs).trim() === String(editItem.username).trim() && String(x.mk).trim() === String(currentSelectedMkNilai).trim()) || { keaktifan:0, quis:0, tugas:0, uts:0, uas:0 }) : { keaktifan:0, quis:0, tugas:0, uts:0, uas:0 };
+            formHtml = `
+                <div class="space-y-4">
+                    <div class="bg-blue-50 p-3 rounded-xl mb-4 text-xs">
+                        <p class="font-bold text-blue-700">${isEdit ? editItem.name : '-'}</p>
+                        <p class="text-blue-600">${currentSelectedMkNilai}</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Aktif (${b.keaktifan}%)</label><input type="number" id="f-aktif" class="w-full px-4 py-2 border rounded-xl" value="${n.keaktifan}"></div>
+                        <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Quis (${b.quis}%)</label><input type="number" id="f-quis" class="w-full px-4 py-2 border rounded-xl" value="${n.quis}"></div>
+                        <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Tugas (${b.tugas}%)</label><input type="number" id="f-tugas" class="w-full px-4 py-2 border rounded-xl" value="${n.tugas}"></div>
+                        <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">UTS (${b.uts}%)</label><input type="number" id="f-uts" class="w-full px-4 py-2 border rounded-xl" value="${n.uts}"></div>
+                        <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">UAS (${b.uas}%)</label><input type="number" id="f-uas" class="w-full px-4 py-2 border rounded-xl" value="${n.uas}"></div>
+                    </div>
+                </div>`;
+        }
+        
+        document.getElementById('modal-body').innerHTML = formHtml;
+        document.getElementById('modal-container').classList.add('modal-active');
+        document.getElementById('modal-submit').onclick = () => {
+            let targetTable = '';
+            if(type === 'mhs' || type === 'dosen') {
+                const newData = { id: isEdit?editItem.id:Date.now(), username: document.getElementById('f-user').value, name: document.getElementById('f-name').value, password: document.getElementById('f-pass').value, role: type==='mhs'?'mahasiswa':'dosen' };
+                if(isEdit) { let idx = database.users.findIndex(u=>u.username===editItem.username); database.users[idx]=newData; } else { database.users.unshift(newData); }
+                targetTable = 'users';
+            } else if(type === 'cpl') {
+                const newData = { kode: document.getElementById('f-kode').value, target: document.getElementById('f-target').value, deskripsi: document.getElementById('f-desc').value };
+                if(isEdit) { let idx = database.cpl.findIndex(c=>c.kode===editItem.kode); database.cpl[idx]=newData; } else { database.cpl.unshift(newData); }
+                targetTable = 'cpl';
+            } else if(type === 'mk') {
+                const newData = { kode: document.getElementById('f-kode').value, nama: document.getElementById('f-name').value, sks: document.getElementById('f-sks').value, semester: document.getElementById('f-smt').value };
+                if(isEdit) { let idx = database.mk.findIndex(m=>m.kode===editItem.kode); database.mk[idx]=newData; } else { database.mk.unshift(newData); }
+                targetTable = 'mk';
+            } else if(type === 'cpmk') {
+                const newData = { kode: document.getElementById('f-kode').value, mk: document.getElementById('f-mk').value, deskripsi: document.getElementById('f-desc').value };
+                if(isEdit) { 
+                    let idx = database.cpmk.findIndex(cp => cp.kode === editItem.kode && cp.mk === editItem.mk);
+                    database.cpmk[idx] = newData;
+                } else { 
+                    database.cpmk.unshift(newData); 
+                }
+                targetTable = 'cpmk';
+            } else if (type === 'nilai') {
+                const nim = String(editItem.username).trim();
+                const mkTarget = String(currentSelectedMkNilai).trim();
+                
+                // Hapus data nilai lama untuk mencegah duplikat
+                database.nilai = database.nilai.filter(n => !(String(n.mhs).trim() === nim && String(n.mk).trim() === mkTarget));
+                
+                const newData = {
+                    id: Date.now(),
+                    mhs: nim,
+                    mk: mkTarget,
+                    keaktifan: parseFloat(document.getElementById('f-aktif').value) || 0,
+                    quis: parseFloat(document.getElementById('f-quis').value) || 0,
+                    tugas: parseFloat(document.getElementById('f-tugas').value) || 0,
+                    uts: parseFloat(document.getElementById('f-uts').value) || 0,
+                    uas: parseFloat(document.getElementById('f-uas').value) || 0
+                };
+                database.nilai.push(newData);
+                targetTable = 'nilai';
+            }
+            backgroundSync(targetTable);
+            showToast("Data disimpan!");
+            closeModal();
+            if(type==='mhs'||type==='dosen') renderManajemenUser('tab-'+type); 
+            else if(type==='nilai') renderInputNilai(currentSelectedMkNilai);
+            else renderDataMaster('tab-'+type);
+        };
+    }
+
+    function editMasterData(type, id) {
+        let item = null;
+        if(type==='mhs'||type==='dosen'||type==='nilai') item = database.users.find(u=>String(u.username).trim()===String(id).trim());
+        else if(type==='cpl') item = database.cpl.find(c=>String(c.kode).trim()===String(id).trim());
+        else if(type==='mk') item = database.mk.find(m=>String(m.kode).trim()===String(id).trim());
+        else if(type==='cpmk') { 
+            let pts = String(id).split('|'); 
+            item = database.cpmk.find(cp => String(cp.kode).trim() === String(pts[0]).trim() && String(cp.mk).trim() === String(pts[1]).trim()); 
+        }
+        if(item) openMasterForm(type, item);
+    }
+
+    function deleteMasterData(type, id) {
+        showCustomDialog('confirm', `Hapus data ${id}?`, () => {
+            let targetTable = '';
+            if(type==='mhs'||type==='dosen') { database.users = database.users.filter(u=>String(u.username).trim()!==String(id).trim()); targetTable='users'; }
+            else if(type==='cpl') { database.cpl = database.cpl.filter(c=>String(c.kode).trim()!==String(id).trim()); targetTable='cpl'; }
+            else if(type==='mk') { database.mk = database.mk.filter(m=>String(m.kode).trim()!==String(id).trim()); targetTable='mk'; }
+            else if(type==='cpmk') { 
+                let pts = String(id).split('|'); 
+                database.cpmk = database.cpmk.filter(cp => !(String(cp.kode).trim() === String(pts[0]).trim() && String(cp.mk).trim() === String(pts[1]).trim())); 
+                targetTable='cpmk'; 
+            } else if(type==='nilai') {
+                database.nilai = database.nilai.filter(n => !(String(n.mhs).trim() === String(id).trim() && String(n.mk).trim() === String(currentSelectedMkNilai).trim()));
+                targetTable = 'nilai';
+            }
+            backgroundSync(targetTable);
+            showToast("Terhapus!");
+            if(type==='mhs'||type==='dosen') renderManajemenUser('tab-'+type); 
+            else if(type==='nilai') renderInputNilai(currentSelectedMkNilai);
+            else renderDataMaster('tab-'+type);
+        });
+    }
+
+    function closeModal() { document.getElementById('modal-container').classList.remove('modal-active'); }
+</script>
+</body>
+</html>
