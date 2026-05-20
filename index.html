@@ -104,6 +104,12 @@
     </div>
 </div>
 
+<!-- BACKGROUND SYNC INDICATOR -->
+<div id="sync-indicator" class="fixed bottom-5 left-5 z-[11000] hidden bg-white/90 backdrop-blur-sm px-4 py-2.5 rounded-full shadow-lg border border-gray-100 flex items-center space-x-2 transition-all duration-300 transform translate-y-0">
+    <i class="fas fa-sync-alt fa-spin text-brand-light text-sm"></i>
+    <span class="text-[10px] sm:text-xs font-bold text-gray-600 tracking-wide">Menyinkronkan ke Cloud...</span>
+</div>
+
 <div id="app-container">
     <!-- LAYAR LOGIN BARU -->
     <div id="login-page" class="flex items-center justify-center h-full w-full overflow-hidden hidden bg-brand md:bg-[#eef2f6]">
@@ -141,7 +147,7 @@
                 <div class="w-full max-w-sm mx-auto relative z-10 mt-20 md:mt-0">
                     <div class="text-center md:text-left mb-8">
                         <h2 class="text-3xl font-extrabold text-gray-900 mb-2 tracking-tight">Sign in</h2>
-                        <p class="text-xs text-gray-400 font-semibold tracking-wide"> Full app contact email: appsedu21@gmail.com</p>
+                        <p class="text-xs text-gray-400 font-semibold tracking-wide">Masukkan kredensial sistem akademik Anda</p>
                     </div>
 
                     <div class="space-y-4">
@@ -413,7 +419,10 @@
         }, 500);
     }
 
-    // --- BACKGROUND SYNC MECHANISM ---
+    // --- BACKGROUND SYNC MECHANISM (DEBOUNCED & OPTIMISTIC) ---
+    let syncTimers = {};
+    let pendingSyncs = new Set(); // Tracks active syncs
+
     function backgroundSync(table) {
         let headers = [];
         if(table === 'settings') headers = ['id', 'namaProdi', 'fakultas', 'kaprodi', 'logoUrl'];
@@ -427,14 +436,52 @@
         else if(table === 'bobotCpmk') headers = ['mk', 'cpmk', 'bobot'];
         else if(table === 'nilaiCpmk') headers = ['id', 'mhs', 'mk', 'cpmk', 'nilai'];
 
+        // Hapus timer lama jika pengguna menginput secara beruntun (Debounce)
+        if (syncTimers[table]) {
+            clearTimeout(syncTimers[table]);
+        }
+
+        // Buat delay 1.5 detik. Pengiriman data ke Google Sheets hanya dilakukan 
+        // setelah user "istirahat" mengedit (mencegah limit exceeded GAS).
+        syncTimers[table] = setTimeout(() => {
+            executeSync(table, headers);
+        }, 1500);
+    }
+
+    function executeSync(table, headers) {
+        const syncIndicator = document.getElementById('sync-indicator');
+        pendingSyncs.add(table);
+        if (syncIndicator) syncIndicator.classList.remove('hidden');
+
+        const finalizeSync = () => {
+            pendingSyncs.delete(table);
+            if (pendingSyncs.size === 0 && syncIndicator) {
+                syncIndicator.classList.add('hidden');
+            }
+        };
+
         if (IS_GAS_ENV) {
-            google.script.run.setTableData(table, headers, database[table]);
+            google.script.run
+                .withSuccessHandler(finalizeSync)
+                .withFailureHandler((error) => {
+                    console.error("Sinkronisasi gagal", error);
+                    finalizeSync();
+                })
+                .setTableData(table, headers, database[table]);
         } else if (GAS_URL && GAS_URL.startsWith("https://script.google.com/")) {
             fetch(GAS_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({ action: 'setTableData', table: table, headers: headers, data: database[table] })
-            }).catch(error => console.error("Sinkronisasi gagal", error));
+            }).then(() => {
+                finalizeSync();
+            }).catch(error => {
+                console.error("Sinkronisasi gagal", error);
+                finalizeSync();
+                // Opsional: showToast("Koneksi internet tidak stabil, proses sinkronisasi tertunda.");
+            });
+        } else {
+            finalizeSync(); // Lingkungan dummy
         }
     }
 
@@ -860,35 +907,33 @@
     }
 
     function saveMappingCpmkCpl() {
-        const btn = document.getElementById('btn-save-cpmkcpl'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Menyimpan...';
-        setTimeout(() => {
-            const checkboxes = document.querySelectorAll('.mapping-cpmkcpl-chk'); let newMappingCpmk = [];
-            checkboxes.forEach(chk => {
-                if(chk.checked) {
-                    const parts = chk.id.split('_'); const mkCode = parts[2]; const cpmkCode = parts[3]; const cplCode = parts[4];
-                    const bobotInput = document.getElementById(`bobot_cpmkcpl_${mkCode}_${cpmkCode}_${cplCode}`);
-                    newMappingCpmk.push({ cpmk: cpmkCode, mk: mkCode, cpl: cplCode, bobot: bobotInput ? parseFloat(bobotInput.value)||0 : 0 });
-                }
-            });
-            database.mappingCpmk = newMappingCpmk; backgroundSync('mappingCpmk'); 
-            showToast("Pemetaan CPMK ke CPL berhasil disimpan!"); btn.disabled = false; btn.innerHTML = '<i class="fas fa-save mr-2"></i>Simpan Pemetaan';
-        }, 300);
+        const btn = document.getElementById('btn-save-cpmkcpl'); 
+        // OPTIMISTIC UI: Instantly update without setTimeout delay
+        const checkboxes = document.querySelectorAll('.mapping-cpmkcpl-chk'); let newMappingCpmk = [];
+        checkboxes.forEach(chk => {
+            if(chk.checked) {
+                const parts = chk.id.split('_'); const mkCode = parts[2]; const cpmkCode = parts[3]; const cplCode = parts[4];
+                const bobotInput = document.getElementById(`bobot_cpmkcpl_${mkCode}_${cpmkCode}_${cplCode}`);
+                newMappingCpmk.push({ cpmk: cpmkCode, mk: mkCode, cpl: cplCode, bobot: bobotInput ? parseFloat(bobotInput.value)||0 : 0 });
+            }
+        });
+        database.mappingCpmk = newMappingCpmk; backgroundSync('mappingCpmk'); 
+        showToast("Pemetaan CPMK ke CPL berhasil disimpan!"); 
     }
 
     function saveMappingCplProfil() {
-        const btn = document.getElementById('btn-save-cplprof'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Menyimpan...';
-        setTimeout(() => {
-            const checkboxes = document.querySelectorAll('.mapping-cplprof-chk'); let newMapping = [];
-            checkboxes.forEach(chk => {
-                if(chk.checked) {
-                    const parts = chk.id.split('_'); const cplCode = parts[2]; const profilCode = parts[3];
-                    const bobotInput = document.getElementById(`bobot_cplprof_${cplCode}_${profilCode}`);
-                    newMapping.push({ cpl: cplCode, profil: profilCode, bobot: bobotInput ? parseFloat(bobotInput.value)||0 : 0 });
-                }
-            });
-            database.mappingCplProfil = newMapping; backgroundSync('mappingCplProfil'); 
-            showToast("Relasi CPL-Profil berhasil disimpan!"); btn.disabled = false; btn.innerHTML = '<i class="fas fa-save mr-2"></i>Simpan Pemetaan';
-        }, 300);
+        const btn = document.getElementById('btn-save-cplprof'); 
+        // OPTIMISTIC UI: Instantly update without setTimeout delay
+        const checkboxes = document.querySelectorAll('.mapping-cplprof-chk'); let newMapping = [];
+        checkboxes.forEach(chk => {
+            if(chk.checked) {
+                const parts = chk.id.split('_'); const cplCode = parts[2]; const profilCode = parts[3];
+                const bobotInput = document.getElementById(`bobot_cplprof_${cplCode}_${profilCode}`);
+                newMapping.push({ cpl: cplCode, profil: profilCode, bobot: bobotInput ? parseFloat(bobotInput.value)||0 : 0 });
+            }
+        });
+        database.mappingCplProfil = newMapping; backgroundSync('mappingCplProfil'); 
+        showToast("Relasi CPL-Profil berhasil disimpan!"); 
     }
 
     // --- FITUR INPUT NILAI MURNI BERBASIS CPMK ---
@@ -1088,12 +1133,11 @@
     };
 
     function saveSettings() {
-        const btn = document.getElementById('btn-save-settings'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyimpan...';
-        setTimeout(() => {
-            const newData = { id: 1, namaProdi: document.getElementById('f-prodi').value, fakultas: document.getElementById('f-fakultas').value, kaprodi: document.getElementById('f-kaprodi').value, logoUrl: document.getElementById('logo-base64').value };
-            if (database.settings.length > 0) database.settings[0] = newData; else database.settings.push(newData);
-            backgroundSync('settings'); updateBranding(); showToast("Pengaturan Instansi berhasil disimpan!"); btn.disabled = false; btn.innerHTML = '<i class="fas fa-save mr-2 text-lg"></i> Simpan Pengaturan Instansi';
-        }, 400);
+        const btn = document.getElementById('btn-save-settings'); 
+        // OPTIMISTIC UI: Update Instantly without setTimeout Delay
+        const newData = { id: 1, namaProdi: document.getElementById('f-prodi').value, fakultas: document.getElementById('f-fakultas').value, kaprodi: document.getElementById('f-kaprodi').value, logoUrl: document.getElementById('logo-base64').value };
+        if (database.settings.length > 0) database.settings[0] = newData; else database.settings.push(newData);
+        backgroundSync('settings'); updateBranding(); showToast("Pengaturan Instansi berhasil disimpan!"); 
     }
 
     function updateBranding() {
