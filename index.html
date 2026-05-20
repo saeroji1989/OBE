@@ -6,8 +6,25 @@
     <title>Sistem Ketercapaian CPL OBE</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#0b1d4a',
+                            DEFAULT: '#112a6a', // Primary Deep Blue
+                            blue: '#0056b3',    // Gradient Start
+                            light: '#007bff',   // Gradient End
+                            soft: '#eff6ff',    // Active / Hover background
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
@@ -16,15 +33,25 @@
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; overflow: hidden; }
-        .sidebar-active { color: #3b82f6; border-right: 4px solid #3b82f6; background-color: #eff6ff; }
+        
+        /* Modern Sidebar Active State */
+        .sidebar-active { 
+            color: #112a6a !important; 
+            border-right: 4px solid #112a6a !important; 
+            background: linear-gradient(90deg, rgba(239,246,255,0.3) 0%, rgba(239,246,255,1) 100%) !important; 
+            font-weight: 700 !important;
+        }
+        .sidebar-active i { color: #112a6a !important; }
+        
         .glass-morphism { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        
         /* Hide Blogger Elements */
         #header-wrapper, #sidebar-wrapper, .post-footer, .comments, #footer-wrapper, .blog-pager { display: none !important; }
         .main-outer { margin: 0 !important; padding: 0 !important; }
         .post { border: none !important; margin: 0 !important; padding: 0 !important; }
         
         /* App Container Fixed Full Screen */
-        #app-container { height: 100vh; position: fixed; top: 0; left: 0; width: 100%; z-index: 9999; background: #f3f4f6; overflow: hidden; display: flex; flex-direction: column; }
+        #app-container { height: 100vh; position: fixed; top: 0; left: 0; width: 100%; z-index: 9999; background: #eef2f6; overflow: hidden; display: flex; flex-direction: column; }
         
         /* Smooth Transition for Sidebar Submenu */
         .submenu-enter { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
@@ -51,103 +78,165 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* 3D Sphere CSS untuk Login Page */
+        .sphere-3d {
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #4a90e2, #0044b3);
+            box-shadow: inset -15px -15px 30px rgba(0,0,0,0.3), 10px 10px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Modern Dashboard Card Shadow */
+        .card-shadow { box-shadow: 0 8px 30px rgba(0,0,0,0.04); }
     </style>
 </head>
 <body>
 
 <!-- GLOBAL LOADING SCREEN -->
-<div id="global-loading" class="fixed inset-0 z-[99999] bg-[#f3f4f6] flex flex-col items-center justify-center text-gray-800 transition-opacity duration-500">
-    <div class="bg-white p-8 rounded-3xl shadow-xl flex flex-col items-center border border-gray-100">
-        <i class="fas fa-server fa-bounce text-5xl text-blue-600 mb-6 shadow-blue-200"></i>
-        <h2 class="text-2xl font-black mb-2 text-gray-800">Menghubungkan Database</h2>
-        <p id="loading-text" class="text-sm text-gray-500 font-semibold mb-6 text-center">Mengunduh state akademik dari server...</p>
-        <div class="w-48 bg-gray-200 rounded-full h-1.5 overflow-hidden">
-            <div class="bg-blue-600 h-1.5 rounded-full animate-pulse w-full"></div>
+<div id="global-loading" class="fixed inset-0 z-[99999] bg-[#eef2f6] flex flex-col items-center justify-center text-gray-800 transition-opacity duration-500">
+    <div class="bg-white p-10 rounded-3xl card-shadow flex flex-col items-center border border-gray-100">
+        <i class="fas fa-server fa-bounce text-5xl text-brand-light mb-6"></i>
+        <h2 class="text-2xl font-extrabold mb-2 text-gray-800 tracking-wide">Menghubungkan Database</h2>
+        <p id="loading-text" class="text-sm text-gray-500 font-medium mb-6 text-center">Mengunduh state akademik dari server...</p>
+        <div class="w-56 bg-gray-100 rounded-full h-1.5 overflow-hidden">
+            <div class="bg-gradient-to-r from-brand-blue to-brand-light h-1.5 rounded-full animate-pulse w-full"></div>
         </div>
     </div>
 </div>
 
 <div id="app-container">
-    <!-- LAYAR LOGIN -->
-    <div id="login-page" class="flex items-center justify-center h-full w-full overflow-y-auto p-4 hidden">
-        <div class="glass-morphism p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 my-auto">
-            <div class="text-center mb-8">
-                <div class="bg-blue-600 w-16 h-16 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-blue-200 overflow-hidden app-brand-icon-login">
-                    <i class="fas fa-graduation-cap text-white text-3xl"></i>
+    <!-- LAYAR LOGIN BARU -->
+    <div id="login-page" class="flex items-center justify-center h-full w-full overflow-hidden hidden bg-brand md:bg-[#eef2f6]">
+        <!-- Main Card Container -->
+        <div class="flex flex-col md:flex-row bg-white md:rounded-[2rem] shadow-2xl overflow-hidden w-full h-full md:w-[90%] md:max-w-5xl md:h-[85vh] md:max-h-[650px] relative z-10">
+
+            <!-- Left Side (Blue Branding) -->
+            <div class="hidden md:flex flex-col justify-center w-1/2 p-12 text-white relative overflow-hidden bg-gradient-to-br from-brand-blue to-brand-light">
+                <!-- Decorative 3D Spheres -->
+                <div class="absolute -top-10 -left-10 w-64 h-64 sphere-3d opacity-80"></div>
+                <div class="absolute bottom-10 -left-20 w-80 h-80 sphere-3d z-0"></div>
+                <div class="absolute -bottom-16 right-10 w-56 h-56 sphere-3d z-0"></div>
+                <div class="absolute top-1/4 -right-10 w-32 h-32 sphere-3d opacity-90 z-0"></div>
+
+                <!-- Content -->
+                <div class="relative z-10 pl-6">
+                    <!-- Icon placeholder for dynamic branding -->
+                    <div class="w-12 h-12 mb-6 hidden app-brand-icon-login"></div> 
+                    
+                    <h2 class="text-4xl font-black tracking-widest mb-1 uppercase drop-shadow-md">WELCOME</h2>
+                    <h1 class="text-xl font-bold mb-6 app-brand-name tracking-wide text-blue-50">OBE TRACKER V3</h1>
+                    <p class="text-xs text-blue-100/90 leading-relaxed font-medium max-w-sm app-brand-fakultas">
+                        Sistem Capaian Pembelajaran Lulusan. Platform evaluasi dan monitoring kurikulum berbasis Outcome-Based Education secara real-time.
+                    </p>
                 </div>
-                <h1 class="text-2xl font-bold text-gray-800 app-brand-name">OBE Tracker v3</h1>
-                <p class="text-gray-500 app-brand-fakultas">Sistem Capaian Pembelajaran Lulusan</p>
             </div>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">Username / NIM / NIDN</label>
-                    <input type="text" id="username" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition outline-none" placeholder="Masukkan ID Pengguna">
+
+            <!-- Right Side (Login Form) -->
+            <div class="w-full md:w-1/2 p-8 md:p-14 flex flex-col justify-center bg-white relative h-full">
+                <!-- Mobile Background Decoration (Visible only on mobile) -->
+                <div class="md:hidden absolute top-0 left-0 w-full h-40 bg-gradient-to-br from-brand-blue to-brand-light rounded-b-[3rem] z-0 flex items-center justify-center">
+                    <h2 class="text-3xl font-black tracking-widest text-white uppercase drop-shadow-md">WELCOME</h2>
                 </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">Password</label>
-                    <input type="password" id="password" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition outline-none" placeholder="••••••••">
+
+                <div class="w-full max-w-sm mx-auto relative z-10 mt-20 md:mt-0">
+                    <div class="text-center md:text-left mb-8">
+                        <h2 class="text-3xl font-extrabold text-gray-900 mb-2 tracking-tight">Sign in</h2>
+                        <p class="text-xs text-gray-400 font-semibold tracking-wide">Masukkan kredensial sistem akademik Anda</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Username -->
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-user text-gray-400 text-sm"></i>
+                            </div>
+                            <input type="text" id="username" class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-xl text-gray-800 font-semibold focus:ring-2 focus:ring-brand focus:bg-white transition-all outline-none text-sm placeholder-gray-400" placeholder="User Name / NIM / NIDN">
+                        </div>
+
+                        <!-- Password -->
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400 text-sm"></i>
+                            </div>
+                            <input type="password" id="password" class="w-full pl-11 pr-16 py-3.5 bg-gray-50 border border-gray-100 rounded-xl text-gray-800 font-semibold focus:ring-2 focus:ring-brand focus:bg-white transition-all outline-none text-sm placeholder-gray-400" placeholder="Password">
+                            <button type="button" onclick="togglePasswordDisplay()" class="absolute inset-y-0 right-0 pr-4 flex items-center text-xs font-bold text-brand hover:text-brand-light transition">
+                                SHOW
+                            </button>
+                        </div>
+
+                        <!-- Options -->
+                        <div class="flex items-center justify-between pt-2">
+                            <label class="flex items-center text-xs text-gray-500 cursor-pointer group">
+                                <input type="checkbox" class="mr-2 w-3.5 h-3.5 rounded border-gray-300 text-brand focus:ring-brand">
+                                <span class="font-medium group-hover:text-gray-700 transition">Remember me</span>
+                            </label>
+                        </div>
+
+                        <!-- Error Message -->
+                        <div id="login-msg" class="text-center text-xs font-bold text-red-500 hidden bg-red-50 py-2.5 rounded-lg border border-red-100">Username atau password salah!</div>
+
+                        <!-- Primary Button -->
+                        <button onclick="handleLogin()" id="login-btn" class="w-full bg-brand hover:bg-brand-dark text-white font-bold py-3.5 rounded-xl shadow-lg shadow-brand/30 transition-all duration-300 mt-6 text-sm tracking-wide">
+                            Sign in
+                        </button>
+                    </div>
                 </div>
-                <button onclick="handleLogin()" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transition duration-300">
-                    Masuk Sekarang
-                </button>
-                <div id="login-msg" class="text-center text-sm text-red-500 hidden mt-2">Username atau password salah!</div>
             </div>
-            <div class="mt-8 text-center text-xs text-gray-400">
-                &copy; 2026 Ahmad Saeroji (appsedu21@gmail.com)
-            </div>
+            <!-- Decorative bottom right shape (hidden on mobile) -->
+            <div class="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-tl from-brand-light to-brand-blue rounded-tl-[100px] md:block hidden z-0 opacity-90 translate-x-4 translate-y-4"></div>
         </div>
     </div>
 
     <!-- DASHBOARD UTAMA -->
-    <div id="main-dashboard" class="hidden h-full w-full flex flex-col md:flex-row relative overflow-hidden bg-[#f3f4f6]">
+    <div id="main-dashboard" class="hidden h-full w-full flex flex-col md:flex-row relative overflow-hidden bg-[#eef2f6]">
         
         <!-- Mobile Header -->
-        <div class="md:hidden flex items-center justify-between bg-white p-4 border-b border-gray-200 z-20 shadow-sm shrink-0 w-full">
+        <div class="md:hidden flex items-center justify-between bg-white p-4 border-b border-gray-100 z-20 shadow-sm shrink-0 w-full">
             <div class="flex items-center space-x-3">
-                <div class="bg-blue-600 p-1.5 rounded-lg shadow-md shadow-blue-200 w-8 h-8 flex items-center justify-center overflow-hidden app-brand-icon">
+                <div class="bg-gradient-to-br from-brand-blue to-brand-light p-1.5 rounded-xl shadow-md shadow-brand/20 w-9 h-9 flex items-center justify-center overflow-hidden app-brand-icon">
                     <i class="fas fa-chart-line text-white text-sm"></i>
                 </div>
                 <span class="font-bold text-lg text-gray-800 app-brand-name">OBE Panel</span>
             </div>
-            <button onclick="toggleSidebar()" class="text-gray-500 hover:text-blue-600 focus:outline-none transition-colors p-1">
+            <button onclick="toggleSidebar()" class="text-gray-400 hover:text-brand focus:outline-none transition-colors p-1">
                 <i class="fas fa-bars text-2xl"></i>
             </button>
         </div>
 
         <!-- Mobile Overlay -->
-        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-30 hidden md:hidden transition-opacity duration-300"></div>
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm z-30 hidden md:hidden transition-opacity duration-300"></div>
 
         <!-- Sidebar Dinamis -->
-        <div id="sidebar-container" class="fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col h-full shadow-2xl md:shadow-none shrink-0">
+        <div id="sidebar-container" class="fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-100 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col h-full shadow-2xl md:shadow-none shrink-0">
             <div class="p-6 flex items-center justify-between md:justify-start space-x-3 border-b border-gray-50 md:border-none shrink-0">
                 <div class="flex items-center space-x-3">
-                    <div class="bg-blue-600 p-2 rounded-lg shadow-md shadow-blue-200 w-10 h-10 flex items-center justify-center overflow-hidden app-brand-icon">
+                    <div class="bg-gradient-to-br from-brand-blue to-brand-light p-2 rounded-xl shadow-md shadow-brand/20 w-10 h-10 flex items-center justify-center overflow-hidden app-brand-icon">
                         <i class="fas fa-chart-line text-white"></i>
                     </div>
-                    <span class="font-bold text-xl text-gray-800 app-brand-name line-clamp-2">OBE Panel</span>
+                    <span class="font-extrabold text-xl text-gray-800 app-brand-name line-clamp-2 tracking-tight">OBE Panel</span>
                 </div>
-                <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-red-500 transition-colors p-1">
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-300 hover:text-red-500 transition-colors p-1">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
             
-            <div class="flex-1 overflow-y-auto custom-scrollbar">
-                <nav id="nav-menu" class="mt-4 space-y-1">
+            <div class="flex-1 overflow-y-auto custom-scrollbar pt-2">
+                <nav id="nav-menu" class="space-y-1">
                     <!-- Menu akan diisi berdasarkan Role -->
                 </nav>
             </div>
 
-            <div class="p-4 border-t border-gray-100 bg-gray-50/50 shrink-0">
+            <div class="p-5 border-t border-gray-100 bg-white shrink-0">
                 <div class="flex items-center space-x-3 mb-4 px-2">
-                    <div id="user-avatar" class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-blue-600">U</div>
+                    <div id="user-avatar" class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-blue to-brand-light flex items-center justify-center font-bold text-white shadow-md">U</div>
                     <div class="overflow-hidden">
                         <p id="display-name" class="text-sm font-bold truncate text-gray-800">User</p>
-                        <p id="display-role" class="text-xs text-gray-500 uppercase tracking-wider">Role</p>
+                        <p id="display-role" class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Role</p>
                     </div>
                 </div>
-                <button onclick="logout()" class="w-full flex items-center space-x-3 px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg transition">
+                <button onclick="logout()" class="w-full flex items-center space-x-3 px-4 py-2.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition font-semibold text-sm">
                     <i class="fas fa-sign-out-alt"></i>
-                    <span class="font-semibold text-sm">Keluar</span>
+                    <span>Keluar Sistem</span>
                 </button>
             </div>
         </div>
@@ -157,11 +246,11 @@
             <!-- Header Mobile / Top -->
             <div class="flex justify-between items-center mb-8">
                 <div>
-                    <h2 id="page-title" class="text-2xl font-bold text-gray-800">Ringkasan Capaian</h2>
-                    <p id="page-desc" class="text-gray-500 text-sm mt-1">Selamat datang kembali di dashboard Anda.</p>
+                    <h2 id="page-title" class="text-3xl font-extrabold text-gray-900 tracking-tight">Ringkasan Capaian</h2>
+                    <p id="page-desc" class="text-gray-500 text-sm mt-1.5 font-medium">Selamat datang kembali di dashboard Anda.</p>
                 </div>
                 <div id="loading-spinner" class="hidden">
-                    <i class="fas fa-circle-notch fa-spin text-blue-600 text-2xl"></i>
+                    <i class="fas fa-circle-notch fa-spin text-brand text-2xl"></i>
                 </div>
             </div>
 
@@ -173,50 +262,51 @@
 </div>
 
 <!-- MODAL SYSTEM -->
-<div id="modal-container" class="fixed inset-0 z-[10000] modal-overlay bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden modal-content flex flex-col max-h-[90vh]">
-        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 shrink-0">
-            <h3 id="modal-title" class="font-bold text-gray-800">Formulir Data</h3>
-            <button onclick="closeModal()" class="text-gray-400 hover:text-red-500 transition"><i class="fas fa-times text-lg"></i></button>
+<div id="modal-container" class="fixed inset-0 z-[10000] modal-overlay bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden modal-content flex flex-col max-h-[90vh]">
+        <div class="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-white shrink-0">
+            <h3 id="modal-title" class="font-extrabold text-gray-900 text-lg">Formulir Data</h3>
+            <button onclick="closeModal()" class="text-gray-300 hover:text-red-500 transition bg-gray-50 hover:bg-red-50 w-8 h-8 rounded-full flex items-center justify-center"><i class="fas fa-times"></i></button>
         </div>
-        <div id="modal-body" class="p-6 overflow-y-auto grow custom-scrollbar">
+        <div id="modal-body" class="p-8 overflow-y-auto grow custom-scrollbar">
             <!-- Form content will be injected here -->
         </div>
-        <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end space-x-3 shrink-0">
-            <button onclick="closeModal()" class="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 transition">Batal</button>
-            <button id="modal-submit" class="bg-blue-600 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-blue-700 shadow-lg shadow-blue-200 transition">Simpan Data</button>
+        <div class="px-8 py-5 bg-gray-50/50 border-t border-gray-100 flex justify-end space-x-3 shrink-0">
+            <button onclick="closeModal()" class="px-5 py-2.5 text-sm font-bold text-gray-500 hover:text-gray-800 transition">Batal</button>
+            <button id="modal-submit" class="bg-brand text-white px-7 py-2.5 rounded-xl text-sm font-bold hover:bg-brand-dark shadow-lg shadow-brand/20 transition tracking-wide">Simpan Data</button>
         </div>
     </div>
 </div>
 
 <!-- DIALOG MODAL (PENGGANTI ALERT & CONFIRM) -->
-<div id="dialog-modal" class="fixed inset-0 z-[12000] modal-overlay bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden modal-content">
-        <div class="p-6 text-center">
-            <div id="dialog-icon" class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-100 mb-4">
-                <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+<div id="dialog-modal" class="fixed inset-0 z-[12000] modal-overlay bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden modal-content">
+        <div class="p-8 text-center">
+            <div id="dialog-icon" class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-5 border border-red-100">
+                <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
             </div>
-            <h3 id="dialog-title" class="text-xl font-bold text-gray-900 mb-2">Konfirmasi</h3>
-            <p id="dialog-message" class="text-sm text-gray-500">Apakah Anda yakin?</p>
+            <h3 id="dialog-title" class="text-xl font-extrabold text-gray-900 mb-2">Konfirmasi</h3>
+            <p id="dialog-message" class="text-sm text-gray-500 font-medium leading-relaxed">Apakah Anda yakin?</p>
         </div>
-        <div class="bg-gray-50 px-4 py-3 flex flex-col sm:flex-row justify-center sm:space-x-3 w-full border-t border-gray-100 gap-2 sm:gap-0">
-            <button id="dialog-cancel" class="w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-bold text-gray-700 hover:bg-gray-50 transition focus:outline-none sm:w-auto sm:text-sm">Batal</button>
-            <button id="dialog-confirm" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-bold text-white hover:bg-red-700 transition focus:outline-none sm:w-auto sm:text-sm">Yakin</button>
+        <div class="bg-gray-50/50 px-6 py-4 flex flex-col sm:flex-row justify-center sm:space-x-3 w-full border-t border-gray-100 gap-2 sm:gap-0">
+            <button id="dialog-cancel" class="w-full inline-flex justify-center rounded-xl border border-gray-200 shadow-sm px-5 py-2.5 bg-white text-base font-bold text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition focus:outline-none sm:w-auto sm:text-sm">Batal</button>
+            <button id="dialog-confirm" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-md px-5 py-2.5 bg-red-500 text-base font-bold text-white hover:bg-red-600 transition focus:outline-none sm:w-auto sm:text-sm">Yakin</button>
         </div>
     </div>
 </div>
 
 <!-- TOAST NOTIFICATION -->
 <div id="toast" class="fixed bottom-10 right-10 z-[11000] hidden">
-    <div class="bg-gray-900 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 toast-active">
-        <i class="fas fa-check-circle text-green-400 text-lg"></i>
-        <span id="toast-msg" class="text-sm font-semibold tracking-wide">Data berhasil diperbarui!</span>
+    <div class="bg-brand text-white px-6 py-3.5 rounded-2xl shadow-2xl flex items-center space-x-3 toast-active shadow-brand/30 border border-brand-light/30">
+        <i class="fas fa-check-circle text-brand-light text-lg"></i>
+        <span id="toast-msg" class="text-sm font-bold tracking-wide">Data berhasil diperbarui!</span>
     </div>
 </div>
 
 <!-- TEMPLATE SCRIPTS & LOGIC -->
 <script>
     // --- KONFIGURASI APLIKASI & DETEKSI OTOMATIS ---
+    const IS_PREVIEW = true;
     const GAS_URL = "URL_DEPLOY_GAS_ANDA_DISINI"; 
     const IS_GAS_ENV = typeof google !== 'undefined' && google.script && google.script.run;
 
@@ -228,7 +318,7 @@
     let database = { settings: [], users: [], profilLulusan: [], cpl: [], mk: [], cpmk: [], mappingCpmk: [], mappingCplProfil: [], bobotCpmk: [], nilaiCpmk: [] };
 
     const DUMMY_DATA = {
-        settings: [{id: 1, namaProdi: 'Prodi S1 Pendidikan Administrasi Perkantoran', fakultas: 'Fakultas Ekonomika dan Bisnis', kaprodi: 'Ahmad Saroji, M.Pd.', logoUrl: ''}],
+        settings: [{id: 1, namaProdi: 'S1 Pendidikan Administrasi Perkantoran', fakultas: 'Fakultas Ekonomika dan Bisnis', kaprodi: 'Ahmad Saroji, M.Pd.', logoUrl: ''}],
         users: [
             {id: 1, username: 'admin', password: 'edudigital', role: 'admin', name: 'Dr. Administrator'},
             {id: 2, username: '19800101', password: 'edudigital', role: 'dosen', name: 'Dr. Dosen Pengampu'},
@@ -272,6 +362,19 @@
             {id: 3, mhs: '211119', mk: 'MK001', cpmk: 'CPMK-1', nilai: 70},
             {id: 4, mhs: '211119', mk: 'MK001', cpmk: 'CPMK-2', nilai: 75}
         ]
+    };
+
+    // --- FITUR SHOW/HIDE PASSWORD TAMBAHAN UI BARU ---
+    window.togglePasswordDisplay = function() {
+        const passInput = document.getElementById('password');
+        const showBtn = event.currentTarget;
+        if (passInput.type === 'password') {
+            passInput.type = 'text';
+            showBtn.innerText = 'HIDE';
+        } else {
+            passInput.type = 'password';
+            showBtn.innerText = 'SHOW';
+        }
     };
 
     // --- INISIALISASI (FETCH ALL DATA) ---
@@ -427,7 +530,6 @@
                 backgroundSync('users'); switchUserTab('tab-' + type);
             } else if (type === 'profil' || type === 'cpl' || type === 'mk' || type === 'cpmk') {
                 showToast("Fungsi upload data master berjalan...");
-                // Note: Struktur master tetap sama.
             }
             showToast("Data berhasil diimpor!"); input.value = "";
         };
@@ -443,7 +545,7 @@
         btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
         setTimeout(() => {
             const user = database.users.find(x => String(x.username) === String(u) && String(x.password) === String(p));
-            if(user) initApp(user); else { msg.classList.remove('hidden'); btn.disabled = false; btn.innerText = 'Masuk Sekarang'; }
+            if(user) initApp(user); else { msg.classList.remove('hidden'); btn.disabled = false; btn.innerText = 'Sign in'; }
         }, 400); 
     }
 
@@ -460,32 +562,80 @@
         currentUser = null;
         document.getElementById('main-dashboard').classList.add('hidden'); document.getElementById('login-page').classList.remove('hidden');
         document.getElementById('username').value = ''; document.getElementById('password').value = '';
-        const btn = document.getElementById('login-btn'); btn.disabled = false; btn.innerText = 'Masuk Sekarang';
+        const btn = document.getElementById('login-btn'); btn.disabled = false; btn.innerText = 'Sign in';
         document.getElementById('login-msg').classList.add('hidden');
     }
 
-    // --- OBE LEVEL 2 PURE CALCULATION ---
-
+    // --- OBE LEVEL 2 PURE CALCULATION (PERFORMA VS PEMENUHAN) ---
+    /**
+     * getCplStats memecah nilai menjadi dua dimensi OBE Murni:
+     * 1. performa: Rata-rata mutu dari MK yang SUDAH diambil (Status Berjalan)
+     * 2. pemenuhan: Akumulasi penyelesaian terhadap total bobot di seluruh kurikulum
+     */
     const getCplStats = (mhsId, cplCode) => {
         const maps = database.mappingCpmk.filter(m => String(m.cpl).trim() === String(cplCode).trim());
         let totalBobotAll = 0, totalBobotTaken = 0, totalScore = 0;
+        
         maps.forEach(map => {
-            const weight = parseFloat(map.bobot) || 0; totalBobotAll += weight;
+            const weight = parseFloat(map.bobot) || 0; 
+            totalBobotAll += weight;
+            
             const n = database.nilaiCpmk.find(x => String(x.mhs).trim() === String(mhsId).trim() && String(x.mk).trim() === String(map.mk).trim() && String(x.cpmk).trim() === String(map.cpmk).trim());
-            if (n && parseFloat(n.nilai) > 0) { totalBobotTaken += weight; totalScore += (parseFloat(n.nilai) * weight); }
+            if (n && parseFloat(n.nilai) > 0) { 
+                totalBobotTaken += weight; 
+                totalScore += (parseFloat(n.nilai) * weight); 
+            }
         });
-        return { berjalan: totalBobotTaken > 0 ? (totalScore / totalBobotTaken) : 0, total: totalBobotAll > 0 ? (totalScore / totalBobotAll) : 0 };
+
+        // Performa = Kualitas (Score) dari MK yang sudah diambil
+        const performa = totalBobotTaken > 0 ? (totalScore / totalBobotTaken) : 0;
+        // Pemenuhan = Penyelesaian total terhadap seluruh MK dalam kurikulum yang menopang CPL ini
+        const pemenuhan = totalBobotAll > 0 ? (totalScore / totalBobotAll) : 0;
+        // Progres = Presentase bobot MK yang sudah diambil dari total yang ditargetkan
+        const progres = totalBobotAll > 0 ? (totalBobotTaken / totalBobotAll) * 100 : 0;
+
+        return { performa, pemenuhan, progres, totalBobotTaken };
     };
 
+    /**
+     * getPlScore menghitung capaian Profil Lulusan berdasar bobot mapping CPL yang terafiliasi.
+     * [UPDATE OBE EXPERT]: Perbaikan inflasi progres dan penambahan aturan Threshold ketat.
+     */
     const getPlScore = (mhsId, plCode) => {
         const maps = database.mappingCplProfil.filter(m => String(m.profil).trim() === String(plCode).trim());
-        let totalScore = 0, totalWeight = 0;
+        let totalBobotAll = 0, totalBobotTaken = 0;
+        let totalScorePerforma = 0, totalScorePemenuhan = 0, totalProgresCpl = 0;
+        let isStrictMet = true; // Aturan OBE: Semua CPL pendukung harus capai target
+        let hasData = false;
+        
         maps.forEach(map => {
             const weight = parseFloat(map.bobot) || 0;
-            const cplStats = getCplStats(mhsId, map.cpl); const cplScore = cplStats.berjalan;
-            if(cplScore > 0) { totalWeight += weight; totalScore += (cplScore * weight); }
+            totalBobotAll += weight;
+            
+            const cplStats = getCplStats(mhsId, map.cpl); 
+            const targetCpl = database.cpl.find(c => c.kode === map.cpl)?.target || 0;
+            
+            if(cplStats.totalBobotTaken > 0) {
+                hasData = true;
+                totalBobotTaken += weight; // Digunakan untuk pembagi performa berjalan
+                totalScorePerforma += (cplStats.performa * weight);
+            }
+            
+            // Kalkulasi akumulasi murni (menghindari bug inflasi progres)
+            totalScorePemenuhan += (cplStats.pemenuhan * weight);
+            totalProgresCpl += (cplStats.progres * weight);
+
+            // Strict Threshold: Jika performa CPL ini di bawah target minimum, PL dianggap belum aman
+            if (cplStats.performa < targetCpl) {
+                isStrictMet = false;
+            }
         });
-        return totalWeight > 0 ? (totalScore / totalWeight) : 0;
+
+        const performa = totalBobotTaken > 0 ? (totalScorePerforma / totalBobotTaken) : 0;
+        const pemenuhan = totalBobotAll > 0 ? (totalScorePemenuhan / totalBobotAll) : 0;
+        const progres = totalBobotAll > 0 ? (totalProgresCpl / totalBobotAll) : 0;
+
+        return { performa, pemenuhan, progres, isStrictMet: (hasData && isStrictMet) };
     };
 
     const getMkScore = (mhsId, mkCode) => {
@@ -518,9 +668,9 @@
         const modal = document.getElementById('dialog-modal'), title = document.getElementById('dialog-title'), msg = document.getElementById('dialog-message'), icon = document.getElementById('dialog-icon'), cancelBtn = document.getElementById('dialog-cancel'), confirmBtn = document.getElementById('dialog-confirm');
         msg.innerText = message; dialogCallback = callback;
         if (type === 'alert') {
-            title.innerText = "Perhatian"; icon.innerHTML = '<i class="fas fa-info-circle text-blue-600 text-2xl"></i>'; icon.className = "mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-blue-100 mb-4"; cancelBtn.classList.add('hidden'); confirmBtn.innerText = 'Mengerti'; confirmBtn.className = "w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-2 bg-blue-600 text-base font-bold text-white hover:bg-blue-700 transition sm:w-auto sm:text-sm";
+            title.innerText = "Perhatian"; icon.innerHTML = '<i class="fas fa-info-circle text-brand-light text-2xl"></i>'; icon.className = "mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-brand-soft mb-5 border border-blue-100"; cancelBtn.classList.add('hidden'); confirmBtn.innerText = 'Mengerti'; confirmBtn.className = "w-full inline-flex justify-center rounded-xl border border-transparent shadow-md px-6 py-2.5 bg-brand text-base font-bold text-white hover:bg-brand-dark transition sm:w-auto sm:text-sm";
         } else if (type === 'confirm') {
-            title.innerText = "Konfirmasi Hapus"; icon.innerHTML = '<i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>'; icon.className = "mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-red-100 mb-4"; cancelBtn.classList.remove('hidden'); confirmBtn.innerText = 'Yakin, Hapus'; confirmBtn.className = "w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-2 bg-red-600 text-base font-bold text-white hover:bg-red-700 transition sm:w-auto sm:text-sm";
+            title.innerText = "Konfirmasi Hapus"; icon.innerHTML = '<i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>'; icon.className = "mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-50 mb-5 border border-red-100"; cancelBtn.classList.remove('hidden'); confirmBtn.innerText = 'Yakin, Hapus'; confirmBtn.className = "w-full inline-flex justify-center rounded-xl border border-transparent shadow-md px-6 py-2.5 bg-red-500 text-base font-bold text-white hover:bg-red-600 transition sm:w-auto sm:text-sm";
         }
         modal.classList.add('modal-active');
         confirmBtn.onclick = () => { if (dialogCallback) dialogCallback(); closeCustomDialog(); }; cancelBtn.onclick = () => closeCustomDialog();
@@ -532,39 +682,39 @@
         const menuContainer = document.getElementById('nav-menu'); let html = '';
         if(currentUser.role === 'admin') {
             html = `
-                <button onclick="loadPage('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition group"><i class="fas fa-home w-5 group-hover:text-blue-500"></i><span class="font-semibold text-sm">Beranda</span></button>
+                <button onclick="loadPage('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-8 py-3.5 text-gray-500 hover:bg-gray-50 transition group"><i class="fas fa-home w-5 text-gray-400 group-hover:text-brand-light transition"></i><span class="font-bold text-sm tracking-wide">Beranda</span></button>
                 <div class="relative group">
-                    <button onclick="toggleSubmenu('user')" class="w-full flex items-center justify-between px-6 py-3 text-gray-600 hover:bg-gray-50 transition"><div class="flex items-center space-x-3"><i class="fas fa-users-cog w-5"></i><span class="font-semibold text-sm">Manajemen User</span></div><i id="arrow-user" class="fas fa-chevron-right text-xs transition-transform duration-300"></i></button>
-                    <div id="submenu-user" class="submenu-enter bg-gray-50/50">
-                        <div class="w-full flex items-center justify-between pl-14 pr-6 py-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50/50 text-sm transition group cursor-pointer" onclick="loadPage('manajemen-user', 'tab-dosen')"><div class="flex items-center space-x-3"><i class="fas fa-chalkboard-teacher text-[10px]"></i><span>Data Dosen</span></div><i onclick="event.stopPropagation(); openMasterForm('dosen')" class="fas fa-plus-circle text-gray-300 hover:text-green-500 transition text-lg" title="Tambah Dosen"></i></div>
-                        <div class="w-full flex items-center justify-between pl-14 pr-6 py-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50/50 text-sm transition group cursor-pointer" onclick="loadPage('manajemen-user', 'tab-mhs')"><div class="flex items-center space-x-3"><i class="fas fa-user-graduate text-[10px]"></i><span>Data Mahasiswa</span></div><i onclick="event.stopPropagation(); openMasterForm('mhs')" class="fas fa-plus-circle text-gray-300 hover:text-green-500 transition text-lg" title="Tambah Mahasiswa"></i></div>
+                    <button onclick="toggleSubmenu('user')" class="w-full flex items-center justify-between px-8 py-3.5 text-gray-500 hover:bg-gray-50 transition"><div class="flex items-center space-x-3"><i class="fas fa-users-cog w-5 text-gray-400 group-hover:text-brand-light transition"></i><span class="font-bold text-sm tracking-wide">Manajemen User</span></div><i id="arrow-user" class="fas fa-chevron-right text-[10px] transition-transform duration-300"></i></button>
+                    <div id="submenu-user" class="submenu-enter bg-gray-50/50 border-y border-gray-100/50">
+                        <div class="w-full flex items-center justify-between pl-16 pr-8 py-3 text-gray-500 hover:text-brand-light hover:bg-brand-soft/50 text-sm transition group cursor-pointer" onclick="loadPage('manajemen-user', 'tab-dosen')"><div class="flex items-center space-x-3"><i class="fas fa-chalkboard-teacher text-[10px]"></i><span class="font-medium">Data Dosen</span></div><i onclick="event.stopPropagation(); openMasterForm('dosen')" class="fas fa-plus-circle text-gray-300 hover:text-brand-light transition text-lg" title="Tambah Dosen"></i></div>
+                        <div class="w-full flex items-center justify-between pl-16 pr-8 py-3 text-gray-500 hover:text-brand-light hover:bg-brand-soft/50 text-sm transition group cursor-pointer" onclick="loadPage('manajemen-user', 'tab-mhs')"><div class="flex items-center space-x-3"><i class="fas fa-user-graduate text-[10px]"></i><span class="font-medium">Data Mahasiswa</span></div><i onclick="event.stopPropagation(); openMasterForm('mhs')" class="fas fa-plus-circle text-gray-300 hover:text-brand-light transition text-lg" title="Tambah Mahasiswa"></i></div>
                     </div>
                 </div>
                 <div class="relative group">
-                    <button onclick="toggleSubmenu('master')" class="w-full flex items-center justify-between px-6 py-3 text-gray-600 hover:bg-gray-50 transition"><div class="flex items-center space-x-3"><i class="fas fa-database w-5"></i><span class="font-semibold text-sm">Data Master</span></div><i id="arrow-master" class="fas fa-chevron-right text-xs transition-transform duration-300"></i></button>
-                    <div id="submenu-master" class="submenu-enter bg-gray-50/50">
-                        <div class="w-full flex items-center justify-between pl-14 pr-6 py-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50/50 text-sm transition group cursor-pointer" onclick="loadPage('data-master', 'tab-profil')"><div class="flex items-center space-x-3"><i class="fas fa-user-tie text-[10px]"></i><span>Profil Lulusan</span></div><i onclick="event.stopPropagation(); openMasterForm('profil')" class="fas fa-plus-circle text-gray-300 hover:text-green-500 transition text-lg" title="Tambah Profil Lulusan"></i></div>
-                        <div class="w-full flex items-center justify-between pl-14 pr-6 py-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50/50 text-sm transition group cursor-pointer" onclick="loadPage('data-master', 'tab-cpl')"><div class="flex items-center space-x-3"><i class="fas fa-list-check text-[10px]"></i><span>Capaian (CPL)</span></div><i onclick="event.stopPropagation(); openMasterForm('cpl')" class="fas fa-plus-circle text-gray-300 hover:text-green-500 transition text-lg" title="Tambah CPL"></i></div>
-                        <div class="w-full flex items-center justify-between pl-14 pr-6 py-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50/50 text-sm transition group cursor-pointer" onclick="loadPage('data-master', 'tab-mk')"><div class="flex items-center space-x-3"><i class="fas fa-book text-[10px]"></i><span>Mata Kuliah</span></div><i onclick="event.stopPropagation(); openMasterForm('mk')" class="fas fa-plus-circle text-gray-300 hover:text-green-500 transition text-lg" title="Tambah Mata Kuliah"></i></div>
-                        <div class="w-full flex items-center justify-between pl-14 pr-6 py-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50/50 text-sm transition group cursor-pointer" onclick="loadPage('data-master', 'tab-cpmk')"><div class="flex items-center space-x-3"><i class="fas fa-bullseye text-[10px]"></i><span>Data CPMK</span></div><i onclick="event.stopPropagation(); openMasterForm('cpmk')" class="fas fa-plus-circle text-gray-300 hover:text-green-500 transition text-lg" title="Tambah CPMK"></i></div>
+                    <button onclick="toggleSubmenu('master')" class="w-full flex items-center justify-between px-8 py-3.5 text-gray-500 hover:bg-gray-50 transition"><div class="flex items-center space-x-3"><i class="fas fa-database w-5 text-gray-400 group-hover:text-brand-light transition"></i><span class="font-bold text-sm tracking-wide">Data Master</span></div><i id="arrow-master" class="fas fa-chevron-right text-[10px] transition-transform duration-300"></i></button>
+                    <div id="submenu-master" class="submenu-enter bg-gray-50/50 border-y border-gray-100/50">
+                        <div class="w-full flex items-center justify-between pl-16 pr-8 py-3 text-gray-500 hover:text-brand-light hover:bg-brand-soft/50 text-sm transition group cursor-pointer" onclick="loadPage('data-master', 'tab-profil')"><div class="flex items-center space-x-3"><i class="fas fa-user-tie text-[10px]"></i><span class="font-medium">Profil Lulusan</span></div><i onclick="event.stopPropagation(); openMasterForm('profil')" class="fas fa-plus-circle text-gray-300 hover:text-brand-light transition text-lg" title="Tambah Profil Lulusan"></i></div>
+                        <div class="w-full flex items-center justify-between pl-16 pr-8 py-3 text-gray-500 hover:text-brand-light hover:bg-brand-soft/50 text-sm transition group cursor-pointer" onclick="loadPage('data-master', 'tab-cpl')"><div class="flex items-center space-x-3"><i class="fas fa-list-check text-[10px]"></i><span class="font-medium">Capaian (CPL)</span></div><i onclick="event.stopPropagation(); openMasterForm('cpl')" class="fas fa-plus-circle text-gray-300 hover:text-brand-light transition text-lg" title="Tambah CPL"></i></div>
+                        <div class="w-full flex items-center justify-between pl-16 pr-8 py-3 text-gray-500 hover:text-brand-light hover:bg-brand-soft/50 text-sm transition group cursor-pointer" onclick="loadPage('data-master', 'tab-mk')"><div class="flex items-center space-x-3"><i class="fas fa-book text-[10px]"></i><span class="font-medium">Mata Kuliah</span></div><i onclick="event.stopPropagation(); openMasterForm('mk')" class="fas fa-plus-circle text-gray-300 hover:text-brand-light transition text-lg" title="Tambah Mata Kuliah"></i></div>
+                        <div class="w-full flex items-center justify-between pl-16 pr-8 py-3 text-gray-500 hover:text-brand-light hover:bg-brand-soft/50 text-sm transition group cursor-pointer" onclick="loadPage('data-master', 'tab-cpmk')"><div class="flex items-center space-x-3"><i class="fas fa-bullseye text-[10px]"></i><span class="font-medium">Data CPMK</span></div><i onclick="event.stopPropagation(); openMasterForm('cpmk')" class="fas fa-plus-circle text-gray-300 hover:text-brand-light transition text-lg" title="Tambah CPMK"></i></div>
                     </div>
                 </div>
                 <div class="relative group">
-                    <button onclick="toggleSubmenu('mapping')" class="w-full flex items-center justify-between px-6 py-3 text-gray-600 hover:bg-gray-50 transition"><div class="flex items-center space-x-3"><i class="fas fa-project-diagram w-5"></i><span class="font-semibold text-sm">Pemetaan OBE</span></div><i id="arrow-mapping" class="fas fa-chevron-right text-xs transition-transform duration-300"></i></button>
-                    <div id="submenu-mapping" class="submenu-enter bg-gray-50/50">
-                        <button onclick="loadPage('mapping', 'cpl-profil')" class="w-full flex items-center space-x-3 pl-14 py-2.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50/50 text-sm transition"><i class="fas fa-user-tie text-[10px]"></i><span>Mapping CPL <i class="fas fa-arrow-right mx-1 text-[8px]"></i> Profil</span></button>
-                        <button onclick="loadPage('mapping', 'cpmk-cpl')" class="w-full flex items-center space-x-3 pl-14 py-2.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50/50 text-sm transition"><i class="fas fa-sitemap text-[10px]"></i><span>Mapping CPMK <i class="fas fa-arrow-right mx-1 text-[8px]"></i> CPL</span></button>
+                    <button onclick="toggleSubmenu('mapping')" class="w-full flex items-center justify-between px-8 py-3.5 text-gray-500 hover:bg-gray-50 transition"><div class="flex items-center space-x-3"><i class="fas fa-project-diagram w-5 text-gray-400 group-hover:text-brand-light transition"></i><span class="font-bold text-sm tracking-wide">Pemetaan OBE</span></div><i id="arrow-mapping" class="fas fa-chevron-right text-[10px] transition-transform duration-300"></i></button>
+                    <div id="submenu-mapping" class="submenu-enter bg-gray-50/50 border-y border-gray-100/50">
+                        <button onclick="loadPage('mapping', 'cpl-profil')" class="w-full flex items-center space-x-3 pl-16 py-3 text-gray-500 hover:text-brand-light hover:bg-brand-soft/50 text-sm transition"><i class="fas fa-user-tie text-[10px]"></i><span class="font-medium">Mapping CPL <i class="fas fa-arrow-right mx-1 text-[8px]"></i> Profil</span></button>
+                        <button onclick="loadPage('mapping', 'cpmk-cpl')" class="w-full flex items-center space-x-3 pl-16 py-3 text-gray-500 hover:text-brand-light hover:bg-brand-soft/50 text-sm transition"><i class="fas fa-sitemap text-[10px]"></i><span class="font-medium">Mapping CPMK <i class="fas fa-arrow-right mx-1 text-[8px]"></i> CPL</span></button>
                     </div>
                 </div>
-                <button onclick="loadPage('input-nilai')" id="nav-input-nilai" class="w-full flex items-center space-x-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition group"><i class="fas fa-edit w-5 group-hover:text-blue-500"></i><span class="font-semibold text-sm">Input Nilai CPMK</span></button>
-                <button onclick="loadPage('laporan')" id="nav-laporan" class="w-full flex items-center space-x-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition group"><i class="fas fa-chart-pie w-5 group-hover:text-blue-500"></i><span class="font-semibold text-sm">Laporan Evaluasi</span></button>
-                <div class="my-2 border-t border-gray-100"></div>
-                <button onclick="loadPage('settings')" id="nav-settings" class="w-full flex items-center space-x-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition group"><i class="fas fa-cog w-5 group-hover:text-blue-500"></i><span class="font-semibold text-sm">Pengaturan Instansi</span></button>
+                <button onclick="loadPage('input-nilai')" id="nav-input-nilai" class="w-full flex items-center space-x-3 px-8 py-3.5 text-gray-500 hover:bg-gray-50 transition group"><i class="fas fa-edit w-5 text-gray-400 group-hover:text-brand-light transition"></i><span class="font-bold text-sm tracking-wide">Input Nilai CPMK</span></button>
+                <button onclick="loadPage('laporan')" id="nav-laporan" class="w-full flex items-center space-x-3 px-8 py-3.5 text-gray-500 hover:bg-gray-50 transition group"><i class="fas fa-chart-pie w-5 text-gray-400 group-hover:text-brand-light transition"></i><span class="font-bold text-sm tracking-wide">Laporan Evaluasi</span></button>
+                <div class="my-3 border-t border-gray-100"></div>
+                <button onclick="loadPage('settings')" id="nav-settings" class="w-full flex items-center space-x-3 px-8 py-3.5 text-gray-500 hover:bg-gray-50 transition group"><i class="fas fa-cog w-5 text-gray-400 group-hover:text-brand-light transition"></i><span class="font-bold text-sm tracking-wide">Pengaturan Instansi</span></button>
             `;
         } else if (currentUser.role === 'dosen') {
-            html = `<button onclick="loadPage('input-nilai')" id="nav-input-nilai" class="w-full flex items-center space-x-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition group"><i class="fas fa-edit w-5 group-hover:text-blue-500"></i><span class="font-semibold text-sm">Input Nilai CPMK</span></button><button onclick="loadPage('laporan')" id="nav-laporan" class="w-full flex items-center space-x-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition group"><i class="fas fa-chart-pie w-5 group-hover:text-blue-500"></i><span class="font-semibold text-sm">Laporan Evaluasi</span></button>`;
+            html = `<button onclick="loadPage('input-nilai')" id="nav-input-nilai" class="w-full flex items-center space-x-3 px-8 py-3.5 text-gray-500 hover:bg-gray-50 transition group"><i class="fas fa-edit w-5 text-gray-400 group-hover:text-brand-light transition"></i><span class="font-bold text-sm tracking-wide">Input Nilai CPMK</span></button><button onclick="loadPage('laporan')" id="nav-laporan" class="w-full flex items-center space-x-3 px-8 py-3.5 text-gray-500 hover:bg-gray-50 transition group"><i class="fas fa-chart-pie w-5 text-gray-400 group-hover:text-brand-light transition"></i><span class="font-bold text-sm tracking-wide">Laporan Evaluasi</span></button>`;
         } else if (currentUser.role === 'mahasiswa') {
-            html = `<button onclick="loadPage('laporan')" id="nav-laporan" class="w-full flex items-center space-x-3 px-6 py-3 text-gray-600 hover:bg-gray-50 transition group"><i class="fas fa-user-graduate w-5 group-hover:text-blue-500"></i><span class="font-semibold text-sm">Laporanku (CPL & PL)</span></button>`;
+            html = `<button onclick="loadPage('laporan')" id="nav-laporan" class="w-full flex items-center space-x-3 px-8 py-3.5 text-gray-500 hover:bg-gray-50 transition group"><i class="fas fa-user-graduate w-5 text-gray-400 group-hover:text-brand-light transition"></i><span class="font-bold text-sm tracking-wide">Laporanku (CPL & PL)</span></button>`;
         }
         menuContainer.innerHTML = html;
     }
@@ -584,7 +734,7 @@
 
     function loadPage(pageId, tabId = null) {
         closeSidebar(); document.querySelectorAll('#nav-menu button').forEach(b => b.classList.remove('sidebar-active')); const activeNav = document.getElementById(`nav-${pageId}`); if(activeNav) activeNav.classList.add('sidebar-active');
-        const container = document.getElementById('content-view'); container.innerHTML = '<div class="text-center py-20"><i class="fas fa-circle-notch fa-spin text-4xl text-blue-300"></i></div>';
+        const container = document.getElementById('content-view'); container.innerHTML = '<div class="text-center py-20"><i class="fas fa-circle-notch fa-spin text-4xl text-brand-light/50"></i></div>';
         setTimeout(() => {
             switch(pageId) { case 'dashboard': renderAdminDashboard(); break; case 'manajemen-user': renderManajemenUser(tabId); break; case 'data-master': renderDataMaster(tabId); break; case 'mapping': renderMappingPage(tabId); break; case 'input-nilai': renderInputNilai(tabId); break; case 'laporan': renderLaporan(); break; case 'settings': renderSettings(); break; }
         }, 150); 
@@ -592,25 +742,26 @@
 
     // --- RENDER PAGES ---
     function renderAdminDashboard() {
-        document.getElementById('page-title').innerText = "Beranda Admin"; document.getElementById('page-desc').innerText = "Ikhtisar capaian Program Studi berbasis evaluasi CPMK murni.";
+        document.getElementById('page-title').innerText = "Beranda Admin"; document.getElementById('page-desc').innerText = "Ikhtisar mutu dan pemenuhan kurikulum Program Studi.";
         const container = document.getElementById('content-view');
 
         const mhsList = database.users.filter(u => u.role === 'mahasiswa');
         let chartLabels = database.cpl.map(c => c.kode);
-        let chartData = database.cpl.map(cpl => {
+        
+        let chartDataPerforma = database.cpl.map(cpl => {
             let sum = 0; let count = 0;
-            mhsList.forEach(mhs => { let stats = getCplStats(mhs.username, cpl.kode); if(stats.berjalan > 0) { sum += stats.berjalan; count++; } });
+            mhsList.forEach(mhs => { let stats = getCplStats(mhs.username, cpl.kode); if(stats.performa > 0) { sum += stats.performa; count++; } });
             return count > 0 ? parseFloat((sum/count).toFixed(1)) : 0;
         });
         
         let chartTargetData = database.cpl.map(c => c.target || 0);
-        let validCpls = chartData.filter(val => val > 0);
+        let validCpls = chartDataPerforma.filter(val => val > 0);
         let overallAvg = validCpls.length > 0 ? (validCpls.reduce((a, b) => a + b, 0) / validCpls.length).toFixed(1) : 0;
 
-        container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"><div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"><p class="text-gray-400 text-sm font-semibold">Total Mahasiswa</p><h3 class="text-3xl font-bold text-gray-800">${mhsList.length}</h3><div class="mt-2 text-green-500 text-xs flex items-center"><i class="fas fa-arrow-up mr-1"></i> Terdaftar</div></div><div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"><p class="text-gray-400 text-sm font-semibold">Total Mata Kuliah</p><h3 class="text-3xl font-bold text-gray-800">${database.mk.length}</h3><div class="mt-2 text-blue-500 text-xs flex items-center"><i class="fas fa-book mr-1"></i> Kurikulum</div></div><div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100"><p class="text-gray-400 text-sm font-semibold">Rata-rata CPL Prodi</p><h3 class="text-3xl font-bold text-gray-800">${overallAvg}<span class="text-lg font-bold text-gray-500">%</span></h3><div class="mt-2 text-orange-500 text-xs flex items-center"><i class="fas fa-chart-bar mr-1"></i> Capaian Berjalan</div></div></div><div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col"><h4 class="font-bold text-gray-700 mb-4">Statistik Capaian Berjalan Per CPL (%)</h4><div class="relative w-full h-72"><canvas id="mainChart"></canvas></div></div>`;
+        container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"><div class="bg-white p-7 rounded-[2rem] card-shadow border border-gray-100 relative overflow-hidden"><div class="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-brand-soft rounded-full opacity-50"></div><p class="text-gray-400 text-xs font-bold uppercase tracking-widest relative z-10">Total Mahasiswa</p><h3 class="text-4xl font-black text-gray-900 mt-2 mb-3 relative z-10">${mhsList.length}</h3><div class="text-brand-light text-xs font-bold flex items-center relative z-10"><i class="fas fa-users mr-1.5"></i> Terdaftar Aktif</div></div><div class="bg-white p-7 rounded-[2rem] card-shadow border border-gray-100 relative overflow-hidden"><div class="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-brand-soft rounded-full opacity-50"></div><p class="text-gray-400 text-xs font-bold uppercase tracking-widest relative z-10">Total Mata Kuliah</p><h3 class="text-4xl font-black text-gray-900 mt-2 mb-3 relative z-10">${database.mk.length}</h3><div class="text-brand text-xs font-bold flex items-center relative z-10"><i class="fas fa-book mr-1.5"></i> Kurikulum</div></div><div class="bg-white p-7 rounded-[2rem] card-shadow border border-gray-100 relative overflow-hidden"><div class="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-brand-soft rounded-full opacity-50"></div><p class="text-gray-400 text-xs font-bold uppercase tracking-widest relative z-10">Rata-rata Kualitas Prodi</p><h3 class="text-4xl font-black text-gray-900 mt-2 mb-3 relative z-10">${overallAvg}<span class="text-xl font-bold text-gray-400 ml-1">%</span></h3><div class="text-green-500 text-xs font-bold flex items-center relative z-10"><i class="fas fa-chart-line mr-1.5"></i> Performa CPL Berjalan</div></div></div><div class="bg-white p-8 rounded-[2rem] card-shadow border border-gray-100 flex flex-col"><h4 class="font-extrabold text-gray-900 mb-6 text-lg">Performa Berjalan vs Target CPL (%)</h4><div class="relative w-full h-80"><canvas id="mainChart"></canvas></div></div>`;
         
         setTimeout(()=>{
-            new Chart(document.getElementById('mainChart').getContext('2d'), { type: 'bar', data: { labels: chartLabels.length > 0 ? chartLabels : ['Belum ada CPL'], datasets: [{ label: 'Rata-rata Berjalan (%)', data: chartData.length > 0 ? chartData : [0], backgroundColor: '#3b82f6', borderRadius: 6 }, { label: 'Target CPL (%)', data: chartTargetData.length > 0 ? chartTargetData : [0], backgroundColor: 'rgba(248, 113, 113, 0.85)', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } }, plugins: { legend: { display: true, position: 'bottom' } } } });
+            new Chart(document.getElementById('mainChart').getContext('2d'), { type: 'bar', data: { labels: chartLabels.length > 0 ? chartLabels : ['Belum ada CPL'], datasets: [{ label: 'Rata-rata Performa Kualitas (%)', data: chartDataPerforma.length > 0 ? chartDataPerforma : [0], backgroundColor: '#007bff', borderRadius: 8 }, { label: 'Target Minimal (%)', data: chartTargetData.length > 0 ? chartTargetData : [0], backgroundColor: 'rgba(11, 29, 74, 0.15)', borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100, grid: { borderDash: [4, 4] } }, x: { grid: { display: false } } }, plugins: { legend: { display: true, position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } } } });
         }, 150);
     }
 
@@ -620,47 +771,47 @@
     function renderManajemenUser(targetTab = 'tab-dosen') {
         document.getElementById('page-title').innerText = "Manajemen Pengguna"; document.getElementById('page-desc').innerText = "Kelola data akun Dosen dan Mahasiswa.";
         const container = document.getElementById('content-view'); if(!targetTab) targetTab = 'tab-dosen';
-        container.innerHTML = `<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"><div class="flex border-b overflow-x-auto custom-scrollbar"><button onclick="switchUserTab('tab-dosen')" id="btn-tab-dosen" class="px-6 py-4 font-bold text-sm text-gray-500 hover:text-blue-400 transition whitespace-nowrap">Data Dosen</button><button onclick="switchUserTab('tab-mhs')" id="btn-tab-mhs" class="px-6 py-4 font-bold text-sm text-gray-500 hover:text-blue-400 transition whitespace-nowrap">Data Mahasiswa</button></div><div id="user-tab-content" class="p-4 sm:p-6"></div></div>`;
+        container.innerHTML = `<div class="bg-white rounded-[2rem] card-shadow border border-gray-100 overflow-hidden"><div class="flex border-b border-gray-100 overflow-x-auto custom-scrollbar bg-gray-50/50"><button onclick="switchUserTab('tab-dosen')" id="btn-tab-dosen" class="px-8 py-5 font-bold text-sm text-gray-400 hover:text-brand-light transition whitespace-nowrap">Data Dosen</button><button onclick="switchUserTab('tab-mhs')" id="btn-tab-mhs" class="px-8 py-5 font-bold text-sm text-gray-400 hover:text-brand-light transition whitespace-nowrap">Data Mahasiswa</button></div><div id="user-tab-content" class="p-6 sm:p-8"></div></div>`;
         switchUserTab(targetTab);
     }
 
     function switchUserTab(id) {
-        document.querySelectorAll('[id^="btn-tab-dosen"], [id^="btn-tab-mhs"]').forEach(btn => btn.className = "px-6 py-4 font-bold text-sm text-gray-500 hover:text-blue-400 transition whitespace-nowrap");
-        document.getElementById(`btn-${id}`).className = "px-6 py-4 font-bold text-sm border-b-2 border-blue-500 text-blue-600 whitespace-nowrap";
+        document.querySelectorAll('[id^="btn-tab-dosen"], [id^="btn-tab-mhs"]').forEach(btn => btn.className = "px-8 py-5 font-bold text-sm text-gray-400 hover:text-brand-light transition whitespace-nowrap");
+        document.getElementById(`btn-${id}`).className = "px-8 py-5 font-extrabold text-sm border-b-[3px] border-brand text-brand whitespace-nowrap bg-white";
         const content = document.getElementById('user-tab-content');
         let type = id.replace('tab-', ''); let roleTarget = type === 'mhs' ? 'mahasiswa' : 'dosen';
         let dataArray = database.users.filter(u => u.role === roleTarget);
         
-        let headerHtml = `<tr><th class="px-4 py-3">${type === 'dosen' ? 'NIDN' : 'NIM'}</th><th class="px-4 py-3">Nama Lengkap</th>${type === 'mhs' ? '<th class="px-4 py-3 text-center">Angkatan</th>' : ''}<th class="px-4 py-3">Status</th><th class="px-4 py-3 text-right">Aksi</th></tr>`;
+        let headerHtml = `<tr><th class="px-5 py-4">${type === 'dosen' ? 'NIDN' : 'NIM'}</th><th class="px-5 py-4">Nama Lengkap</th>${type === 'mhs' ? '<th class="px-5 py-4 text-center">Angkatan</th>' : ''}<th class="px-5 py-4">Status</th><th class="px-5 py-4 text-right">Aksi</th></tr>`;
         
-        let rowsHtml = dataArray.length === 0 ? `<tr><td colspan="${type==='mhs'?5:4}" class="px-4 py-10 text-center text-gray-400 italic">Belum ada data.</td></tr>` : dataArray.map(item => `<tr class="hover:bg-gray-50/50 transition"><td class="px-4 py-4 text-sm font-mono text-blue-600 font-semibold">${item.username}</td><td class="px-4 py-4 text-sm font-bold text-gray-700">${item.name}</td>${type === 'mhs' ? `<td class="px-4 py-4 text-sm text-gray-600 text-center font-bold">${item.angkatan || '-'}</td>` : ''}<td class="px-4 py-4 text-xs"><span class="bg-blue-50 text-blue-600 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider">${item.role}</span></td><td class="px-4 py-4 text-right space-x-3"><button onclick="editMasterData('${type}', '${item.username}')" class="text-gray-300 hover:text-blue-500 transition" title="Edit Data"><i class="fas fa-edit"></i></button><button onclick="deleteMasterData('${type}', '${item.username}')" class="text-gray-300 hover:text-red-500 transition" title="Hapus Data"><i class="fas fa-trash-alt"></i></button></td></tr>`).join('');
+        let rowsHtml = dataArray.length === 0 ? `<tr><td colspan="${type==='mhs'?5:4}" class="px-5 py-12 text-center text-gray-400 italic font-medium">Belum ada data ${roleTarget}.</td></tr>` : dataArray.map(item => `<tr class="hover:bg-brand-soft/40 transition"><td class="px-5 py-4 text-sm font-mono text-brand-blue font-bold">${item.username}</td><td class="px-5 py-4 text-sm font-bold text-gray-800">${item.name}</td>${type === 'mhs' ? `<td class="px-5 py-4 text-sm text-gray-600 text-center font-bold">${item.angkatan || '-'}</td>` : ''}<td class="px-5 py-4 text-xs"><span class="bg-brand-soft text-brand-blue px-2.5 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider">${item.role}</span></td><td class="px-5 py-4 text-right space-x-3"><button onclick="editMasterData('${type}', '${item.username}')" class="text-gray-300 hover:text-brand-light transition" title="Edit Data"><i class="fas fa-edit text-base"></i></button><button onclick="deleteMasterData('${type}', '${item.username}')" class="text-gray-300 hover:text-red-500 transition" title="Hapus Data"><i class="fas fa-trash-alt text-base"></i></button></td></tr>`).join('');
         
-        content.innerHTML = `<div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4"><h4 class="text-lg font-bold text-gray-700 w-full md:w-auto">Daftar Pengguna</h4><div class="flex flex-wrap gap-2 w-full md:w-auto"><button onclick="openMasterForm('${type}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:bg-blue-700 transition flex-grow md:flex-grow-0 text-center"><i class="fas fa-plus mr-2"></i>Baru</button><button onclick="window.downloadTemplate('${type}')" class="text-blue-600 border border-blue-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-50 flex-grow md:flex-grow-0 text-center"><i class="fas fa-download mr-2"></i>Template</button><label class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:bg-green-700 cursor-pointer flex-grow md:flex-grow-0 text-center inline-block"><i class="fas fa-upload mr-2"></i>Upload<input type="file" class="hidden" onchange="window.handleExcelUpload(this, '${type}')"></label></div></div><div class="overflow-x-auto border border-gray-100 rounded-xl custom-scrollbar"><table class="w-full text-left whitespace-nowrap"><thead class="bg-gray-50/80 text-[11px] uppercase tracking-widest text-gray-400 font-bold border-b border-gray-100">${headerHtml}</thead><tbody id="table-body" class="divide-y divide-gray-50 bg-white">${rowsHtml}</tbody></table></div>`;
+        content.innerHTML = `<div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4"><h4 class="text-lg font-extrabold text-gray-900 w-full md:w-auto tracking-tight">Daftar Pengguna</h4><div class="flex flex-wrap gap-3 w-full md:w-auto"><button onclick="openMasterForm('${type}')" class="bg-brand text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-brand/20 hover:bg-brand-dark transition flex-grow md:flex-grow-0 text-center tracking-wide"><i class="fas fa-plus mr-2"></i>Baru</button><button onclick="window.downloadTemplate('${type}')" class="text-brand border-2 border-brand px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-brand-soft transition flex-grow md:flex-grow-0 text-center tracking-wide"><i class="fas fa-download mr-2"></i>Template</button><label class="bg-gradient-to-br from-brand-blue to-brand-light text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-brand-light/30 hover:opacity-90 transition cursor-pointer flex-grow md:flex-grow-0 text-center inline-block tracking-wide"><i class="fas fa-upload mr-2"></i>Upload<input type="file" class="hidden" onchange="window.handleExcelUpload(this, '${type}')"></label></div></div><div class="overflow-x-auto border border-gray-100 rounded-2xl custom-scrollbar shadow-sm"><table class="w-full text-left whitespace-nowrap"><thead class="bg-gray-50/90 text-[10px] uppercase tracking-widest text-gray-400 font-extrabold border-b border-gray-100">${headerHtml}</thead><tbody id="table-body" class="divide-y divide-gray-50/80 bg-white">${rowsHtml}</tbody></table></div>`;
     }
 
     function renderDataMaster(targetTab = 'tab-profil') { 
         document.getElementById('page-title').innerText = "Pengelolaan Data Master"; document.getElementById('page-desc').innerText = "Kelola entitas dasar akademik sistem.";
         const container = document.getElementById('content-view'); if(!targetTab || targetTab === 'tab-mhs') targetTab = 'tab-profil';
-        container.innerHTML = `<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"><div class="flex border-b overflow-x-auto custom-scrollbar"><button onclick="switchMasterTab('tab-profil')" id="btn-tab-profil" class="px-6 py-4 font-bold text-sm text-gray-500 hover:text-blue-400 transition whitespace-nowrap">Profil Lulusan</button><button onclick="switchMasterTab('tab-cpl')" id="btn-tab-cpl" class="px-6 py-4 font-bold text-sm text-gray-500 hover:text-blue-400 transition whitespace-nowrap">Master CPL</button><button onclick="switchMasterTab('tab-mk')" id="btn-tab-mk" class="px-6 py-4 font-bold text-sm text-gray-500 hover:text-blue-400 transition whitespace-nowrap">Mata Kuliah</button><button onclick="switchMasterTab('tab-cpmk')" id="btn-tab-cpmk" class="px-6 py-4 font-bold text-sm text-gray-500 hover:text-blue-400 transition whitespace-nowrap">Data CPMK</button></div><div id="tab-content-area" class="p-4 sm:p-6"></div></div>`;
+        container.innerHTML = `<div class="bg-white rounded-[2rem] card-shadow border border-gray-100 overflow-hidden"><div class="flex border-b border-gray-100 overflow-x-auto custom-scrollbar bg-gray-50/50"><button onclick="switchMasterTab('tab-profil')" id="btn-tab-profil" class="px-8 py-5 font-bold text-sm text-gray-400 hover:text-brand-light transition whitespace-nowrap">Profil Lulusan</button><button onclick="switchMasterTab('tab-cpl')" id="btn-tab-cpl" class="px-8 py-5 font-bold text-sm text-gray-400 hover:text-brand-light transition whitespace-nowrap">Master CPL</button><button onclick="switchMasterTab('tab-mk')" id="btn-tab-mk" class="px-8 py-5 font-bold text-sm text-gray-400 hover:text-brand-light transition whitespace-nowrap">Mata Kuliah</button><button onclick="switchMasterTab('tab-cpmk')" id="btn-tab-cpmk" class="px-8 py-5 font-bold text-sm text-gray-400 hover:text-brand-light transition whitespace-nowrap">Data CPMK</button></div><div id="tab-content-area" class="p-6 sm:p-8"></div></div>`;
         switchMasterTab(targetTab);
     }
     
     function switchMasterTab(id) {
-        document.querySelectorAll('[id^="btn-tab-profil"], [id^="btn-tab-cpl"], [id^="btn-tab-mk"], [id^="btn-tab-cpmk"]').forEach(btn => btn.className = "px-6 py-4 font-bold text-sm text-gray-500 hover:text-blue-400 transition whitespace-nowrap");
-        const activeBtn = document.getElementById(`btn-${id}`); if(activeBtn) activeBtn.className = "px-6 py-4 font-bold text-sm border-b-2 border-blue-500 text-blue-600 whitespace-nowrap";
+        document.querySelectorAll('[id^="btn-tab-profil"], [id^="btn-tab-cpl"], [id^="btn-tab-mk"], [id^="btn-tab-cpmk"]').forEach(btn => btn.className = "px-8 py-5 font-bold text-sm text-gray-400 hover:text-brand-light transition whitespace-nowrap");
+        const activeBtn = document.getElementById(`btn-${id}`); if(activeBtn) activeBtn.className = "px-8 py-5 font-extrabold text-sm border-b-[3px] border-brand text-brand whitespace-nowrap bg-white";
         const content = document.getElementById('tab-content-area'); if(!content) return;
         let type = id.replace('tab-', ''); let dataArray = database[type === 'profil' ? 'profilLulusan' : type];
         
-        let rowsHtml = dataArray.length === 0 ? `<tr><td colspan="4" class="px-4 py-10 text-center text-gray-400 italic">Belum ada data.</td></tr>` : dataArray.map(item => {
+        let rowsHtml = dataArray.length === 0 ? `<tr><td colspan="4" class="px-5 py-12 text-center text-gray-400 italic font-medium">Belum ada data.</td></tr>` : dataArray.map(item => {
             let col1, col2, col3, rowId;
-            if(type === 'profil') { rowId = col1 = item.kode; col2 = item.deskripsi; col3 = `<span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-[10px] font-bold tracking-wider uppercase">Aktif</span>`; }
-            else if(type === 'cpl') { rowId = col1 = item.kode; col2 = item.deskripsi; col3 = `<span class="bg-green-50 text-green-600 px-2 py-1 rounded text-[10px] font-bold tracking-wider">${item.target || 0}% Target</span>`; }
-            else if(type === 'mk') { rowId = col1 = item.kode; col2 = item.nama; col3 = `<span class="text-gray-600 font-bold">${item.sks} SKS</span> <span class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded text-[10px] ml-2 font-bold uppercase tracking-wider">Smt ${item.semester || '-'}</span>`; }
-            else if(type === 'cpmk') { rowId = `${item.kode}|${item.mk}`; col1 = item.kode; col2 = item.deskripsi; let mkName = database.mk.find(m => m.kode === item.mk)?.nama || item.mk; col3 = `<span class="bg-blue-50 text-blue-600 px-2 py-1 rounded text-[10px] font-bold tracking-wider">${mkName}</span>`; }
-            return `<tr class="hover:bg-gray-50/50 transition"><td class="px-4 py-4 text-sm font-mono text-blue-600 font-semibold">${col1}</td><td class="px-4 py-4 text-sm font-bold text-gray-700 whitespace-normal min-w-[200px]">${col2}</td><td class="px-4 py-4 text-xs">${col3}</td><td class="px-4 py-4 text-right space-x-3"><button onclick="editMasterData('${type}', '${rowId}')" class="text-gray-300 hover:text-blue-500 transition" title="Edit Data"><i class="fas fa-edit"></i></button><button onclick="deleteMasterData('${type}', '${rowId}')" class="text-gray-300 hover:text-red-500 transition" title="Hapus Data"><i class="fas fa-trash-alt"></i></button></td></tr>`;
+            if(type === 'profil') { rowId = col1 = item.kode; col2 = item.deskripsi; col3 = `<span class="bg-gray-100 text-gray-500 px-2.5 py-1.5 rounded-lg text-[10px] font-bold tracking-wider uppercase">Aktif</span>`; }
+            else if(type === 'cpl') { rowId = col1 = item.kode; col2 = item.deskripsi; col3 = `<span class="bg-green-50 text-green-600 px-2.5 py-1.5 rounded-lg text-[10px] font-bold tracking-wider border border-green-100">${item.target || 0}% Target</span>`; }
+            else if(type === 'mk') { rowId = col1 = item.kode; col2 = item.nama; col3 = `<span class="text-brand-dark font-extrabold">${item.sks} SKS</span> <span class="bg-brand-soft text-brand px-2.5 py-1 rounded-lg text-[10px] ml-2 font-bold uppercase tracking-wider">Smt ${item.semester || '-'}</span>`; }
+            else if(type === 'cpmk') { rowId = `${item.kode}|${item.mk}`; col1 = item.kode; col2 = item.deskripsi; let mkName = database.mk.find(m => m.kode === item.mk)?.nama || item.mk; col3 = `<span class="bg-brand-soft text-brand-blue px-2.5 py-1.5 rounded-lg text-[10px] font-bold tracking-wider">${mkName}</span>`; }
+            return `<tr class="hover:bg-brand-soft/40 transition"><td class="px-5 py-4 text-sm font-mono text-brand-blue font-bold">${col1}</td><td class="px-5 py-4 text-sm font-bold text-gray-800 whitespace-normal min-w-[200px]">${col2}</td><td class="px-5 py-4 text-xs">${col3}</td><td class="px-5 py-4 text-right space-x-3"><button onclick="editMasterData('${type}', '${rowId}')" class="text-gray-300 hover:text-brand-light transition" title="Edit Data"><i class="fas fa-edit text-base"></i></button><button onclick="deleteMasterData('${type}', '${rowId}')" class="text-gray-300 hover:text-red-500 transition" title="Hapus Data"><i class="fas fa-trash-alt text-base"></i></button></td></tr>`;
         }).join('');
 
-        content.innerHTML = `<div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4"><h4 class="text-lg font-bold text-gray-700 w-full md:w-auto">Daftar Data</h4><div class="flex flex-wrap gap-2 w-full md:w-auto"><button onclick="openMasterForm('${type}')" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:bg-blue-700 transition flex-grow md:flex-grow-0 text-center"><i class="fas fa-plus mr-2"></i>Baru</button><button onclick="window.downloadTemplate('${type}')" class="text-blue-600 border border-blue-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-50 flex-grow md:flex-grow-0 text-center"><i class="fas fa-download mr-2"></i>Template</button><label class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md hover:bg-green-700 cursor-pointer flex-grow md:flex-grow-0 text-center inline-block"><i class="fas fa-upload mr-2"></i>Upload<input type="file" class="hidden" onchange="window.handleExcelUpload(this, '${type}')"></label></div></div><div class="overflow-x-auto border border-gray-100 rounded-xl custom-scrollbar"><table class="w-full text-left whitespace-nowrap"><thead class="bg-gray-50/80 text-[11px] uppercase tracking-widest text-gray-400 font-bold border-b border-gray-100"><tr><th class="px-4 py-3">Kode</th><th class="px-4 py-3">Deskripsi / Nama</th><th class="px-4 py-3">Atribut</th><th class="px-4 py-3 text-right">Aksi</th></tr></thead><tbody class="divide-y divide-gray-50 bg-white">${rowsHtml}</tbody></table></div>`;
+        content.innerHTML = `<div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4"><h4 class="text-lg font-extrabold text-gray-900 w-full md:w-auto tracking-tight">Daftar Data</h4><div class="flex flex-wrap gap-3 w-full md:w-auto"><button onclick="openMasterForm('${type}')" class="bg-brand text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-brand/20 hover:bg-brand-dark transition flex-grow md:flex-grow-0 text-center tracking-wide"><i class="fas fa-plus mr-2"></i>Baru</button><button onclick="window.downloadTemplate('${type}')" class="text-brand border-2 border-brand px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-brand-soft transition flex-grow md:flex-grow-0 text-center tracking-wide"><i class="fas fa-download mr-2"></i>Template</button><label class="bg-gradient-to-br from-brand-blue to-brand-light text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-brand-light/30 hover:opacity-90 transition cursor-pointer flex-grow md:flex-grow-0 text-center inline-block tracking-wide"><i class="fas fa-upload mr-2"></i>Upload<input type="file" class="hidden" onchange="window.handleExcelUpload(this, '${type}')"></label></div></div><div class="overflow-x-auto border border-gray-100 rounded-2xl custom-scrollbar shadow-sm"><table class="w-full text-left whitespace-nowrap"><thead class="bg-gray-50/90 text-[10px] uppercase tracking-widest text-gray-400 font-extrabold border-b border-gray-100"><tr><th class="px-5 py-4">Kode</th><th class="px-5 py-4">Deskripsi / Nama</th><th class="px-5 py-4">Atribut</th><th class="px-5 py-4 text-right">Aksi</th></tr></thead><tbody class="divide-y divide-gray-50/80 bg-white">${rowsHtml}</tbody></table></div>`;
     }
 
     // --- MAPPING (CPL -> PL & CPMK -> CPL) ---
@@ -670,41 +821,41 @@
         const container = document.getElementById('content-view');
 
         if(subId === 'cpl-profil' && (database.cpl.length === 0 || database.profilLulusan.length === 0)) {
-            container.innerHTML = `<div class="bg-yellow-50 border border-yellow-200 p-8 rounded-3xl text-center max-w-2xl mx-auto mt-10"><h3 class="font-bold text-xl text-yellow-700 mb-2">Data Master Belum Lengkap</h3><p class="text-sm text-yellow-600">Lengkapi Data Profil Lulusan dan CPL terlebih dahulu.</p></div>`; return;
+            container.innerHTML = `<div class="bg-yellow-50 border border-yellow-200 p-10 rounded-3xl text-center max-w-2xl mx-auto mt-10"><h3 class="font-extrabold text-xl text-yellow-700 mb-2">Data Master Belum Lengkap</h3><p class="text-sm text-yellow-600 font-medium">Lengkapi Data Profil Lulusan dan CPL terlebih dahulu.</p></div>`; return;
         } else if (subId === 'cpmk-cpl' && (database.cpl.length === 0 || database.mk.length === 0)) {
-            container.innerHTML = `<div class="bg-yellow-50 border border-yellow-200 p-8 rounded-3xl text-center max-w-2xl mx-auto mt-10"><h3 class="font-bold text-xl text-yellow-700 mb-2">Data Master Belum Lengkap</h3><p class="text-sm text-yellow-600">Lengkapi Data CPL dan Mata Kuliah terlebih dahulu.</p></div>`; return;
+            container.innerHTML = `<div class="bg-yellow-50 border border-yellow-200 p-10 rounded-3xl text-center max-w-2xl mx-auto mt-10"><h3 class="font-extrabold text-xl text-yellow-700 mb-2">Data Master Belum Lengkap</h3><p class="text-sm text-yellow-600 font-medium">Lengkapi Data CPL dan Mata Kuliah terlebih dahulu.</p></div>`; return;
         }
 
         if (subId === 'cpmk-cpl') {
-            let thHtml = database.cpl.map(c => `<th class="px-2 py-3 text-center border-l border-gray-200 min-w-[80px]" title="${c.deskripsi}"><div class="font-bold text-gray-700 text-xs">${c.kode}</div><div class="text-[9px] text-gray-400 font-normal uppercase tracking-wider mt-1">Bobot (%) ke CPL</div></th>`).join('');
+            let thHtml = database.cpl.map(c => `<th class="px-3 py-4 text-center border-l border-gray-100 min-w-[80px]" title="${c.deskripsi}"><div class="font-extrabold text-brand-dark text-xs">${c.kode}</div><div class="text-[9px] text-gray-400 font-bold uppercase tracking-wider mt-1.5">Bobot (%) ke CPL</div></th>`).join('');
             let trHtml = database.mk.map(m => {
                 let cpmks = database.cpmk.filter(cp => cp.mk === m.kode);
                 if(cpmks.length === 0) return '';
-                let mkHeader = `<tr class="bg-blue-50/50"><td colspan="${database.cpl.length + 1}" class="px-6 py-2 font-bold text-xs text-blue-800 border-l-4 border-blue-500 uppercase tracking-wider sticky left-0 z-10">${m.kode} - ${m.nama}</td></tr>`;
+                let mkHeader = `<tr class="bg-brand-soft/60"><td colspan="${database.cpl.length + 1}" class="px-6 py-3 font-extrabold text-xs text-brand border-l-4 border-brand uppercase tracking-wider sticky left-0 z-10">${m.kode} - ${m.nama}</td></tr>`;
                 let cpmkRows = cpmks.map(cp => {
                     let tdHtml = database.cpl.map(c => {
                         const mapObj = database.mappingCpmk.find(map => map.cpmk === cp.kode && map.mk === cp.mk && map.cpl === c.kode);
                         const isMapped = !!mapObj; const bobot = mapObj ? (mapObj.bobot || '') : '';
-                        return `<td class="px-2 py-3 border-l border-gray-100 text-center"><div class="flex flex-col items-center justify-center gap-1.5"><input type="checkbox" id="chk_cpmkcpl_${cp.mk}_${cp.kode}_${c.kode}" class="mapping-checkbox rounded text-green-600 border-gray-300 focus:ring-green-500 transition cursor-pointer mapping-cpmkcpl-chk" ${isMapped ? 'checked' : ''} onchange="document.getElementById('bobot_cpmkcpl_${cp.mk}_${cp.kode}_${c.kode}').classList.toggle('hidden', !this.checked)"><input type="number" id="bobot_cpmkcpl_${cp.mk}_${cp.kode}_${c.kode}" class="w-14 text-center text-xs p-1 border border-gray-200 rounded focus:ring-1 focus:ring-green-500 outline-none text-gray-700 font-bold shadow-inner ${isMapped ? '' : 'hidden'}" placeholder="0" value="${bobot}" min="0" max="100"></div></td>`;
+                        return `<td class="px-3 py-4 border-l border-gray-50 text-center"><div class="flex flex-col items-center justify-center gap-2"><input type="checkbox" id="chk_cpmkcpl_${cp.mk}_${cp.kode}_${c.kode}" class="mapping-checkbox rounded text-brand-light border-gray-300 focus:ring-brand-light transition cursor-pointer mapping-cpmkcpl-chk" ${isMapped ? 'checked' : ''} onchange="document.getElementById('bobot_cpmkcpl_${cp.mk}_${cp.kode}_${c.kode}').classList.toggle('hidden', !this.checked)"><input type="number" id="bobot_cpmkcpl_${cp.mk}_${cp.kode}_${c.kode}" class="w-14 text-center text-xs p-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand-light outline-none text-brand-dark font-bold shadow-inner ${isMapped ? '' : 'hidden'}" placeholder="0" value="${bobot}" min="0" max="100"></div></td>`;
                     }).join('');
-                    return `<tr class="hover:bg-green-50/30 transition border-b border-gray-100 last:border-0"><td class="px-6 py-3 bg-white sticky left-0 z-10 border-r border-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] min-w-[250px]"><p class="font-bold text-gray-700 text-sm whitespace-nowrap">${cp.kode}</p><p class="text-[10px] text-gray-500 mt-1 whitespace-normal w-full md:w-56 leading-relaxed">${cp.deskripsi}</p></td>${tdHtml}</tr>`;
+                    return `<tr class="hover:bg-brand-soft/30 transition border-b border-gray-50 last:border-0"><td class="px-6 py-4 bg-white sticky left-0 z-10 border-r border-gray-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.02)] min-w-[250px]"><p class="font-bold text-gray-800 text-sm whitespace-nowrap">${cp.kode}</p><p class="text-[10px] font-medium text-gray-500 mt-1.5 whitespace-normal w-full md:w-56 leading-relaxed">${cp.deskripsi}</p></td>${tdHtml}</tr>`;
                 }).join('');
                 return mkHeader + cpmkRows;
             }).join('');
 
-            container.innerHTML = `<div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-4 md:p-8"><div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 w-full"><h3 class="font-bold text-lg text-gray-800"><i class="fas fa-sitemap text-green-500 mr-2"></i> Mapping CPMK <i class="fas fa-arrow-right text-gray-400 text-sm mx-1"></i> CPL</h3><button onclick="saveMappingCpmkCpl()" id="btn-save-cpmkcpl" class="bg-green-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-green-200 hover:bg-green-700 transition w-full md:w-auto"><i class="fas fa-save mr-2"></i>Simpan Pemetaan</button></div><div class="overflow-x-auto border border-gray-200 rounded-2xl relative shadow-inner custom-scrollbar"><table class="w-full text-left whitespace-nowrap"><thead class="bg-gray-50/90 text-[11px] uppercase font-black tracking-widest text-gray-500 border-b border-gray-200"><tr><th class="px-6 py-4 sticky left-0 bg-gray-50/90 backdrop-blur z-20 border-r border-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] min-w-[250px]">Capaian Mata Kuliah (CPMK)</th>${thHtml}</tr></thead><tbody class="divide-y divide-gray-100 bg-white">${trHtml}</tbody></table></div><p class="text-xs text-gray-400 mt-4"><i class="fas fa-info-circle mr-1"></i> Centang kotak untuk menghubungkan CPMK dengan CPL, lalu isi bobot persentase relasi kontribusinya.</p></div>`;
+            container.innerHTML = `<div class="bg-white rounded-[2rem] card-shadow border border-gray-100 p-6 md:p-8"><div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 w-full"><h3 class="font-extrabold text-lg text-gray-900 tracking-tight"><i class="fas fa-sitemap text-brand-light mr-2"></i> Mapping CPMK <i class="fas fa-arrow-right text-gray-300 text-sm mx-2"></i> CPL</h3><button onclick="saveMappingCpmkCpl()" id="btn-save-cpmkcpl" class="bg-brand text-white px-7 py-3 rounded-xl text-sm font-bold shadow-lg shadow-brand/20 hover:bg-brand-dark transition tracking-wide w-full md:w-auto"><i class="fas fa-save mr-2"></i>Simpan Pemetaan</button></div><div class="overflow-x-auto border border-gray-100 rounded-2xl relative custom-scrollbar shadow-sm"><table class="w-full text-left whitespace-nowrap"><thead class="bg-gray-50/90 text-[10px] uppercase font-black tracking-widest text-gray-400 border-b border-gray-100"><tr><th class="px-6 py-5 sticky left-0 bg-gray-50/90 backdrop-blur z-20 border-r border-gray-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.02)] min-w-[250px]">Capaian Mata Kuliah (CPMK)</th>${thHtml}</tr></thead><tbody class="divide-y divide-gray-50/50 bg-white">${trHtml}</tbody></table></div><p class="text-xs font-medium text-gray-400 mt-5"><i class="fas fa-info-circle mr-1 text-brand-light"></i> Centang kotak untuk menghubungkan CPMK dengan CPL, lalu isi bobot persentase relasi kontribusinya.</p></div>`;
         } else if (subId === 'cpl-profil') {
-            let thHtml = database.profilLulusan.map(p => `<th class="px-2 py-3 text-center border-l border-gray-200 min-w-[80px]" title="${p.deskripsi}"><div class="font-bold text-gray-700 text-xs">${p.kode}</div><div class="text-[9px] text-gray-400 font-normal uppercase tracking-wider mt-1">Bobot (%)</div></th>`).join('');
+            let thHtml = database.profilLulusan.map(p => `<th class="px-3 py-4 text-center border-l border-gray-100 min-w-[80px]" title="${p.deskripsi}"><div class="font-extrabold text-brand-dark text-xs">${p.kode}</div><div class="text-[9px] text-gray-400 font-bold uppercase tracking-wider mt-1.5">Bobot (%)</div></th>`).join('');
             let trHtml = database.cpl.map(c => {
                 let tdHtml = database.profilLulusan.map(p => {
                     const mapObj = (database.mappingCplProfil || []).find(map => map.cpl === c.kode && map.profil === p.kode);
                     const isMapped = !!mapObj; const bobot = mapObj ? mapObj.bobot : '';
-                    return `<td class="px-2 py-3 border-l border-gray-100 text-center"><div class="flex flex-col items-center justify-center gap-1.5"><input type="checkbox" id="chk_cplprof_${c.kode}_${p.kode}" class="mapping-checkbox rounded text-purple-600 border-gray-300 focus:ring-purple-500 transition cursor-pointer mapping-cplprof-chk" ${isMapped ? 'checked' : ''} onchange="document.getElementById('bobot_cplprof_${c.kode}_${p.kode}').classList.toggle('hidden', !this.checked)"><input type="number" id="bobot_cplprof_${c.kode}_${p.kode}" class="w-14 text-center text-xs p-1 border border-gray-200 rounded focus:ring-1 focus:ring-purple-500 outline-none text-gray-700 font-bold shadow-inner ${isMapped ? '' : 'hidden'}" placeholder="0" value="${bobot}" min="0" max="100"></div></td>`;
+                    return `<td class="px-3 py-4 border-l border-gray-50 text-center"><div class="flex flex-col items-center justify-center gap-2"><input type="checkbox" id="chk_cplprof_${c.kode}_${p.kode}" class="mapping-checkbox rounded text-brand border-gray-300 focus:ring-brand transition cursor-pointer mapping-cplprof-chk" ${isMapped ? 'checked' : ''} onchange="document.getElementById('bobot_cplprof_${c.kode}_${p.kode}').classList.toggle('hidden', !this.checked)"><input type="number" id="bobot_cplprof_${c.kode}_${p.kode}" class="w-14 text-center text-xs p-1.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-brand outline-none text-brand-dark font-bold shadow-inner ${isMapped ? '' : 'hidden'}" placeholder="0" value="${bobot}" min="0" max="100"></div></td>`;
                 }).join('');
-                return `<tr class="hover:bg-purple-50/30 transition border-b border-gray-100 last:border-0"><td class="px-6 py-4 bg-white sticky left-0 z-10 border-r border-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] min-w-[200px]"><p class="font-bold text-gray-700 text-sm whitespace-normal w-full md:w-48 leading-tight">${c.kode}</p><p class="text-[10px] text-gray-400 mt-1 w-full md:w-48 whitespace-normal">${c.deskripsi}</p></td>${tdHtml}</tr>`;
+                return `<tr class="hover:bg-brand-soft/30 transition border-b border-gray-50 last:border-0"><td class="px-6 py-5 bg-white sticky left-0 z-10 border-r border-gray-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.02)] min-w-[200px]"><p class="font-bold text-gray-800 text-sm whitespace-normal w-full md:w-48 leading-tight">${c.kode}</p><p class="text-[10px] font-medium text-gray-400 mt-1.5 w-full md:w-48 whitespace-normal">${c.deskripsi}</p></td>${tdHtml}</tr>`;
             }).join('');
 
-            container.innerHTML = `<div class="bg-white rounded-3xl shadow-sm border border-gray-200 p-4 md:p-8"><div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 w-full"><h3 class="font-bold text-lg text-gray-800"><i class="fas fa-user-tie text-purple-500 mr-2"></i> Mapping CPL <i class="fas fa-arrow-right text-gray-400 text-sm mx-1"></i> Profil Lulusan</h3><button onclick="saveMappingCplProfil()" id="btn-save-cplprof" class="bg-purple-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-purple-200 hover:bg-purple-700 transition w-full md:w-auto"><i class="fas fa-save mr-2"></i>Simpan Pemetaan</button></div><div class="overflow-x-auto border border-gray-200 rounded-2xl relative shadow-inner custom-scrollbar"><table class="w-full text-left whitespace-nowrap"><thead class="bg-gray-50/90 text-[11px] uppercase font-black tracking-widest text-gray-500 border-b border-gray-200"><tr><th class="px-6 py-4 sticky left-0 bg-gray-50/90 backdrop-blur z-20 border-r border-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] min-w-[200px]">Capaian Pembelajaran Lulusan (CPL)</th>${thHtml}</tr></thead><tbody class="divide-y divide-gray-100 bg-white">${trHtml}</tbody></table></div></div>`;
+            container.innerHTML = `<div class="bg-white rounded-[2rem] card-shadow border border-gray-100 p-6 md:p-8"><div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 w-full"><h3 class="font-extrabold text-lg text-gray-900 tracking-tight"><i class="fas fa-user-tie text-brand mr-2"></i> Mapping CPL <i class="fas fa-arrow-right text-gray-300 text-sm mx-2"></i> Profil Lulusan</h3><button onclick="saveMappingCplProfil()" id="btn-save-cplprof" class="bg-brand text-white px-7 py-3 rounded-xl text-sm font-bold shadow-lg shadow-brand/20 hover:bg-brand-dark transition tracking-wide w-full md:w-auto"><i class="fas fa-save mr-2"></i>Simpan Pemetaan</button></div><div class="overflow-x-auto border border-gray-100 rounded-2xl relative custom-scrollbar shadow-sm"><table class="w-full text-left whitespace-nowrap"><thead class="bg-gray-50/90 text-[10px] uppercase font-black tracking-widest text-gray-400 border-b border-gray-100"><tr><th class="px-6 py-5 sticky left-0 bg-gray-50/90 backdrop-blur z-20 border-r border-gray-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.02)] min-w-[200px]">Capaian Pembelajaran Lulusan (CPL)</th>${thHtml}</tr></thead><tbody class="divide-y divide-gray-50/50 bg-white">${trHtml}</tbody></table></div></div>`;
         }
     }
 
@@ -745,53 +896,53 @@
         document.getElementById('page-title').innerText = "Input Nilai CPMK"; document.getElementById('page-desc').innerText = "Berikan penilaian langsung pada capaian instrumen per mahasiswa.";
         const container = document.getElementById('content-view');
 
-        if (database.mk.length === 0) { container.innerHTML = `<div class="bg-yellow-50 border border-yellow-200 p-8 rounded-3xl text-center max-w-2xl mx-auto mt-10"><h3 class="font-bold text-xl text-yellow-700 mb-2">Belum ada Mata Kuliah</h3></div>`; return; }
+        if (database.mk.length === 0) { container.innerHTML = `<div class="bg-yellow-50 border border-yellow-200 p-10 rounded-3xl text-center max-w-2xl mx-auto mt-10"><h3 class="font-extrabold text-xl text-yellow-700 mb-2">Belum ada Mata Kuliah</h3></div>`; return; }
 
         currentSelectedMkNilai = mkCodeParams || currentSelectedMkNilai || database.mk[0].kode;
         const activeCpmks = database.cpmk.filter(c => c.mk === currentSelectedMkNilai);
         let mkOptions = database.mk.map(m => `<option value="${m.kode}" ${m.kode === currentSelectedMkNilai ? 'selected' : ''}>${m.kode} - ${m.nama}</option>`).join('');
 
         if (activeCpmks.length === 0) {
-            container.innerHTML = `<div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 mb-6 flex items-center space-x-4"><div class="bg-blue-100 text-blue-600 w-10 h-10 rounded-xl flex items-center justify-center font-bold shrink-0"><i class="fas fa-filter"></i></div><div class="grow"><label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Pilih Mata Kuliah</label><select class="w-full bg-transparent font-bold text-gray-700 outline-none cursor-pointer" onchange="renderInputNilai(this.value)">${mkOptions}</select></div></div><div class="bg-yellow-50 border border-yellow-200 p-8 rounded-3xl text-center max-w-2xl mx-auto mt-10"><i class="fas fa-bullseye text-4xl text-yellow-500 mb-4"></i><h3 class="font-bold text-xl text-yellow-700 mb-2">CPMK Belum Didefinisikan</h3><p class="text-sm text-yellow-600">Anda belum menetapkan Capaian (CPMK) untuk mata kuliah ini di Data Master.</p></div>`; return;
+            container.innerHTML = `<div class="bg-white p-5 rounded-[2rem] card-shadow border border-gray-100 mb-8 flex items-center space-x-5"><div class="bg-brand-soft text-brand w-12 h-12 rounded-2xl flex items-center justify-center font-bold shrink-0"><i class="fas fa-filter"></i></div><div class="grow"><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Pilih Mata Kuliah</label><select class="w-full bg-transparent font-bold text-gray-800 outline-none cursor-pointer" onchange="renderInputNilai(this.value)">${mkOptions}</select></div></div><div class="bg-yellow-50 border border-yellow-200 p-10 rounded-3xl text-center max-w-2xl mx-auto mt-10"><i class="fas fa-bullseye text-5xl text-yellow-500 mb-5"></i><h3 class="font-extrabold text-xl text-yellow-700 mb-2">CPMK Belum Didefinisikan</h3><p class="text-sm text-yellow-600 font-medium">Anda belum menetapkan Capaian (CPMK) untuk mata kuliah ini di Data Master.</p></div>`; return;
         }
 
         let totalBobotMk = 0;
         let bobotHtml = activeCpmks.map(c => {
             const b = database.bobotCpmk.find(x => x.mk === currentSelectedMkNilai && x.cpmk === c.kode); const val = b ? (parseFloat(b.bobot) || 0) : 0; totalBobotMk += val;
-            return `<div class="flex justify-between items-center"><span class="text-sm font-semibold text-gray-600">${c.kode}</span><div class="flex items-center w-20 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1"><input type="number" id="b_${c.kode}" class="w-full bg-transparent outline-none text-right text-sm font-bold bobot-input" value="${val}"><span class="text-xs text-gray-400 ml-1">%</span></div></div>`;
+            return `<div class="flex justify-between items-center"><span class="text-sm font-bold text-gray-700">${c.kode}</span><div class="flex items-center w-20 bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 focus-within:ring-2 focus-within:ring-brand"><input type="number" id="b_${c.kode}" class="w-full bg-transparent outline-none text-right text-sm font-bold bobot-input" value="${val}"><span class="text-xs text-gray-400 ml-1">%</span></div></div>`;
         }).join('');
         const isBobotValid = totalBobotMk === 100;
 
         let thCpmkHtml = activeCpmks.map(c => {
             const b = database.bobotCpmk.find(x => x.mk === currentSelectedMkNilai && x.cpmk === c.kode); const val = b ? (parseFloat(b.bobot) || 0) : 0;
-            return `<th class="px-4 py-3 text-center" title="${c.deskripsi}">${c.kode}<br><span class="text-[9px] font-normal text-blue-500">${val}%</span></th>`;
+            return `<th class="px-5 py-4 text-center" title="${c.deskripsi}">${c.kode}<br><span class="text-[9px] font-bold text-brand-light tracking-wide">${val}%</span></th>`;
         }).join('');
 
         const allMhs = database.users.filter(u => u.role === 'mahasiswa');
-        let tableRows = allMhs.length === 0 ? `<tr><td colspan="${4 + activeCpmks.length}" class="px-6 py-10 text-center text-gray-400 italic">Belum ada mahasiswa.</td></tr>` : allMhs.map(mhsObj => {
+        let tableRows = allMhs.length === 0 ? `<tr><td colspan="${4 + activeCpmks.length}" class="px-6 py-12 text-center text-gray-400 italic font-medium">Belum ada mahasiswa.</td></tr>` : allMhs.map(mhsObj => {
             let tdCpmk = '';
             activeCpmks.forEach(c => {
                 const n = database.nilaiCpmk.find(x => x.mhs === mhsObj.username && x.mk === currentSelectedMkNilai && x.cpmk === c.kode);
-                tdCpmk += `<td class="px-4 py-3 text-center font-semibold text-sm ${n ? 'text-gray-800' : 'text-gray-300'}">${n ? n.nilai : '-'}</td>`;
+                tdCpmk += `<td class="px-5 py-4 text-center font-bold text-sm ${n ? 'text-gray-900' : 'text-gray-300'}">${n ? n.nilai : '-'}</td>`;
             });
             const finalMkScore = getMkScore(mhsObj.username, currentSelectedMkNilai);
             const hasAnyScore = !!database.nilaiCpmk.find(x => x.mhs === mhsObj.username && x.mk === currentSelectedMkNilai);
 
-            return `<tr class="hover:bg-gray-50/50 transition">
-                <td class="px-4 py-3 text-sm font-mono text-gray-500">${mhsObj.username}</td><td class="px-4 py-3 text-sm font-bold text-gray-700">${mhsObj.name}</td>${tdCpmk}<td class="px-4 py-3 text-center font-bold text-blue-600 bg-blue-50/30">${hasAnyScore ? finalMkScore.toFixed(1) : '-'}</td>
-                <td class="px-4 py-3 text-right space-x-2">
-                    ${isBobotValid ? `<button onclick="editMasterData('nilai', '${mhsObj.username}')" class="text-gray-300 hover:text-blue-500 transition" title="Input/Edit Nilai"><i class="fas fa-edit"></i></button>` : `<button disabled class="text-gray-100 cursor-not-allowed"><i class="fas fa-edit"></i></button>`}
-                    ${hasAnyScore && isBobotValid ? `<button onclick="deleteMasterData('nilai', '${mhsObj.username}')" class="text-gray-300 hover:text-red-500 transition" title="Hapus Nilai"><i class="fas fa-trash-alt"></i></button>` : `<button disabled class="text-gray-100 cursor-not-allowed"><i class="fas fa-trash-alt"></i></button>`}
+            return `<tr class="hover:bg-brand-soft/40 transition">
+                <td class="px-5 py-4 text-sm font-mono text-brand-blue font-bold">${mhsObj.username}</td><td class="px-5 py-4 text-sm font-bold text-gray-800">${mhsObj.name}</td>${tdCpmk}<td class="px-5 py-4 text-center font-black text-brand bg-brand-soft/50">${hasAnyScore ? finalMkScore.toFixed(1) : '-'}</td>
+                <td class="px-5 py-4 text-right space-x-3">
+                    ${isBobotValid ? `<button onclick="editMasterData('nilai', '${mhsObj.username}')" class="text-gray-300 hover:text-brand-light transition" title="Input/Edit Nilai"><i class="fas fa-edit text-base"></i></button>` : `<button disabled class="text-gray-100 cursor-not-allowed"><i class="fas fa-edit text-base"></i></button>`}
+                    ${hasAnyScore && isBobotValid ? `<button onclick="deleteMasterData('nilai', '${mhsObj.username}')" class="text-gray-300 hover:text-red-500 transition" title="Hapus Nilai"><i class="fas fa-trash-alt text-base"></i></button>` : `<button disabled class="text-gray-100 cursor-not-allowed"><i class="fas fa-trash-alt text-base"></i></button>`}
                 </td>
             </tr>`;
         }).join('');
 
-        container.innerHTML = `<div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 mb-6 flex items-center space-x-4"><div class="bg-blue-100 text-blue-600 w-10 h-10 rounded-xl flex items-center justify-center font-bold shrink-0"><i class="fas fa-filter"></i></div><div class="grow"><label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Pilih Mata Kuliah</label><select class="w-full bg-transparent font-bold text-gray-700 outline-none cursor-pointer" onchange="renderInputNilai(this.value)">${mkOptions}</select></div></div><div class="grid grid-cols-1 lg:grid-cols-4 gap-6"><div class="lg:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 h-fit"><h4 class="font-bold text-gray-800 mb-4 flex items-center"><i class="fas fa-sliders-h mr-2 text-blue-500"></i> Bobot Penilaian Transkrip</h4><p class="text-xs text-gray-400 mb-5 leading-relaxed">Tentukan persentase pengaruh setiap CPMK terhadap nilai akhir transkrip MK (Total wajib 100%).</p><div class="space-y-3" id="bobot-container">${bobotHtml}</div><div class="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center"><span class="text-sm font-black text-gray-800">TOTAL</span><span id="bobot-total-display" class="text-sm font-black ${isBobotValid?'text-blue-600':'text-red-500'}">${totalBobotMk}%</span></div><button onclick="saveBobotCpmk()" id="btn-save-bobot" class="w-full mt-4 bg-gray-800 text-white py-2 rounded-xl text-sm font-bold hover:bg-gray-900 transition shadow-lg">Simpan Bobot</button></div><div class="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col overflow-hidden"><div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 w-full"><h4 class="font-bold text-lg text-gray-800 w-full md:w-auto"><i class="fas fa-list-ol mr-2 text-blue-500"></i> Rekapitulasi Nilai CPMK</h4><div class="flex flex-wrap gap-2 w-full md:w-auto">${isBobotValid ? `<button onclick="window.downloadTemplate('nilai')" class="text-blue-600 border border-blue-600 px-4 py-2 rounded-xl text-sm font-bold hover:bg-blue-50 transition"><i class="fas fa-download"></i> Template</button><label class="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md hover:bg-green-700 cursor-pointer"><i class="fas fa-upload"></i> Upload<input type="file" class="hidden" onchange="window.handleExcelUpload(this, 'nilai')"></label>` : `<div class="bg-yellow-50 text-yellow-600 px-4 py-2 rounded-xl text-xs font-bold border border-yellow-200 flex items-center shadow-inner w-full md:w-auto"><i class="fas fa-exclamation-triangle mr-2"></i> Atur & Simpan Bobot 100% untuk Mengisi Nilai</div>`}</div></div><div class="overflow-x-auto border border-gray-100 rounded-xl custom-scrollbar w-full"><table class="w-full text-left whitespace-nowrap"><thead class="bg-gray-50/80 text-[11px] uppercase tracking-widest text-gray-500 font-bold border-b border-gray-100"><tr><th class="px-4 py-3">NIM</th><th class="px-4 py-3">Nama Mahasiswa</th>${thCpmkHtml}<th class="px-4 py-3 text-center text-blue-600">Nilai Akhir<br>Transkrip</th><th class="px-4 py-3 text-right">Aksi</th></tr></thead><tbody class="divide-y divide-gray-50 bg-white">${tableRows}</tbody></table></div></div></div>`;
+        container.innerHTML = `<div class="bg-white p-5 rounded-[2rem] card-shadow border border-gray-100 mb-8 flex items-center space-x-5"><div class="bg-brand-soft text-brand w-12 h-12 rounded-2xl flex items-center justify-center font-bold shrink-0"><i class="fas fa-filter"></i></div><div class="grow"><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Pilih Mata Kuliah</label><select class="w-full bg-transparent font-bold text-gray-800 outline-none cursor-pointer" onchange="renderInputNilai(this.value)">${mkOptions}</select></div></div><div class="grid grid-cols-1 lg:grid-cols-4 gap-8"><div class="lg:col-span-1 bg-white rounded-[2rem] card-shadow border border-gray-100 p-8 h-fit"><h4 class="font-extrabold text-gray-900 mb-4 flex items-center tracking-tight"><i class="fas fa-sliders-h mr-2 text-brand-light"></i> Bobot Transkrip</h4><p class="text-xs text-gray-500 mb-6 font-medium leading-relaxed">Tentukan persentase pengaruh setiap CPMK (Total wajib 100%).</p><div class="space-y-4" id="bobot-container">${bobotHtml}</div><div class="mt-6 pt-5 border-t border-gray-100 flex justify-between items-center"><span class="text-sm font-black text-gray-800">TOTAL</span><span id="bobot-total-display" class="text-base font-black ${isBobotValid?'text-brand':'text-red-500'}">${totalBobotMk}%</span></div><button onclick="saveBobotCpmk()" id="btn-save-bobot" class="w-full mt-6 bg-brand hover:bg-brand-dark text-white py-3 rounded-xl text-sm font-bold transition shadow-lg shadow-brand/20 tracking-wide">Simpan Bobot</button></div><div class="lg:col-span-3 bg-white rounded-[2rem] card-shadow border border-gray-100 p-8 flex flex-col overflow-hidden"><div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 w-full"><h4 class="font-extrabold text-lg text-gray-900 w-full md:w-auto tracking-tight"><i class="fas fa-list-ol mr-2 text-brand-light"></i> Rekapitulasi Nilai CPMK</h4><div class="flex flex-wrap gap-3 w-full md:w-auto">${isBobotValid ? `<button onclick="window.downloadTemplate('nilai')" class="text-brand border-2 border-brand px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-brand-soft transition tracking-wide"><i class="fas fa-download mr-2"></i> Template</button><label class="bg-gradient-to-br from-brand-blue to-brand-light text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-brand-light/30 hover:opacity-90 cursor-pointer tracking-wide"><i class="fas fa-upload mr-2"></i> Upload<input type="file" class="hidden" onchange="window.handleExcelUpload(this, 'nilai')"></label>` : `<div class="bg-yellow-50 text-yellow-600 px-5 py-2.5 rounded-xl text-xs font-bold border border-yellow-200 flex items-center w-full md:w-auto"><i class="fas fa-exclamation-triangle mr-2"></i> Atur & Simpan Bobot 100% untuk Mengisi Nilai</div>`}</div></div><div class="overflow-x-auto border border-gray-100 rounded-2xl custom-scrollbar w-full shadow-sm"><table class="w-full text-left whitespace-nowrap"><thead class="bg-gray-50/90 text-[10px] uppercase tracking-widest text-gray-400 font-extrabold border-b border-gray-100"><tr><th class="px-5 py-4">NIM</th><th class="px-5 py-4">Nama Mahasiswa</th>${thCpmkHtml}<th class="px-5 py-4 text-center text-brand">Nilai Akhir<br>Transkrip</th><th class="px-5 py-4 text-right">Aksi</th></tr></thead><tbody class="divide-y divide-gray-50/80 bg-white">${tableRows}</tbody></table></div></div></div>`;
 
         const updateSum = () => {
             const inputs = document.querySelectorAll('.bobot-input'); let sum = 0; inputs.forEach(inp => sum += parseFloat(inp.value)||0);
             const sumDisplay = document.getElementById('bobot-total-display'); sumDisplay.innerText = sum + '%';
-            if(sum !== 100) { sumDisplay.classList.remove('text-blue-600'); sumDisplay.classList.add('text-red-500'); } else { sumDisplay.classList.add('text-blue-600'); sumDisplay.classList.remove('text-red-500'); }
+            if(sum !== 100) { sumDisplay.classList.remove('text-brand'); sumDisplay.classList.add('text-red-500'); } else { sumDisplay.classList.add('text-brand'); sumDisplay.classList.remove('text-red-500'); }
         };
         document.querySelectorAll('.bobot-input').forEach(el => el.addEventListener('input', updateSum));
     }
@@ -809,7 +960,7 @@
         const container = document.getElementById('content-view');
 
         if(database.cpl.length === 0 || database.mk.length === 0 || database.mappingCpmk.length === 0) {
-            container.innerHTML = `<div class="bg-yellow-50 border border-yellow-200 p-8 rounded-3xl text-center max-w-2xl mx-auto mt-10"><h3 class="font-bold text-xl text-yellow-700 mb-2">Data Belum Memadai</h3><p class="text-sm text-yellow-600">Laporan CPL membutuhkan Data Master serta Pemetaan Matriks (Level 2) yang sudah dikonfigurasi.</p></div>`; return;
+            container.innerHTML = `<div class="bg-yellow-50 border border-yellow-200 p-10 rounded-3xl text-center max-w-2xl mx-auto mt-10"><h3 class="font-extrabold text-xl text-yellow-700 mb-2">Data Belum Memadai</h3><p class="text-sm text-yellow-600 font-medium">Laporan CPL membutuhkan Data Master serta Pemetaan Matriks (Level 2) yang sudah dikonfigurasi.</p></div>`; return;
         }
 
         let mhsList = currentUser.role === 'mahasiswa' ? database.users.filter(u => u.username === currentUser.username) : database.users.filter(u => u.role === 'mahasiswa');
@@ -838,39 +989,69 @@
         let tableRows = ''; let cplLabels = database.cpl.map(c => c.kode); let cplTarget = database.cpl.map(c => c.target || 0);
 
         targetMhsList.forEach(mhs => {
-            let rowHtml = `<td class="px-4 py-3 font-mono text-sm text-gray-500 sticky left-0 bg-white border-r border-gray-100 z-10">${mhs.username}</td><td class="px-4 py-3 text-sm font-bold text-gray-800">${mhs.name}</td>`;
+            let rowHtml = `<td class="px-5 py-4 font-mono text-sm text-gray-500 sticky left-0 bg-white border-r border-gray-100 z-10 align-middle">${mhs.username}</td><td class="px-5 py-4 text-sm font-bold text-gray-800 align-middle">${mhs.name}</td>`;
             database.cpl.forEach(cpl => {
-                let stats = getCplStats(mhs.username, cpl.kode); let cplScore = stats.berjalan;
-                let color = cplScore >= (cpl.target || 0) ? 'text-green-600 bg-green-50/50' : 'text-red-600 bg-red-50/50';
-                rowHtml += `<td class="px-4 py-3 text-center font-bold text-sm ${color}">${cplScore.toFixed(1)}</td>`;
+                let stats = getCplStats(mhs.username, cpl.kode); 
+                let cplScore = stats.performa;
+                let cplProgres = stats.progres;
+                let color = cplScore >= (cpl.target || 0) ? 'text-green-600' : 'text-red-600';
+                let bgProgress = cplScore >= (cpl.target || 0) ? 'bg-green-500' : 'bg-red-500';
+                
+                rowHtml += `<td class="px-5 py-4 text-center align-middle border-l border-gray-50">
+                    <div class="font-bold text-sm ${color}">${cplScore.toFixed(1)}</div>
+                    <div class="w-full bg-gray-100 rounded-full h-1.5 mt-1.5 overflow-hidden" title="Progres Kurikulum: ${cplProgres.toFixed(0)}%">
+                        <div class="${bgProgress} h-1.5 rounded-full" style="width: ${cplProgres}%"></div>
+                    </div>
+                </td>`;
             });
-            tableRows += `<tr class="border-b border-gray-100 hover:bg-gray-50 transition">${rowHtml}</tr>`;
+            tableRows += `<tr class="border-b border-gray-50 hover:bg-gray-50/50 transition">${rowHtml}</tr>`;
         });
 
-        let cplChartData = database.cpl.map(cpl => {
+        let cplChartDataPerforma = database.cpl.map(cpl => {
             let sum = 0; let count = 0;
-            targetMhsList.forEach(mhs => { let stats = getCplStats(mhs.username, cpl.kode); if(stats.berjalan > 0) { sum += stats.berjalan; count++; } });
+            targetMhsList.forEach(mhs => { let stats = getCplStats(mhs.username, cpl.kode); if(stats.performa > 0) { sum += stats.performa; count++; } });
             return count > 0 ? (sum/count).toFixed(1) : 0;
         });
 
         let plLabels = database.profilLulusan.map(p => p.kode);
-        let plChartData = database.profilLulusan.map(pl => {
+        
+        let plChartDataPerforma = database.profilLulusan.map(pl => {
             let sum = 0; let count = 0;
-            targetMhsList.forEach(mhs => { let s = getPlScore(mhs.username, pl.kode); if(s > 0) { sum += s; count++; } });
+            targetMhsList.forEach(mhs => { let s = getPlScore(mhs.username, pl.kode); if(s.performa > 0) { sum += s.performa; count++; } });
             return count > 0 ? (sum/count).toFixed(1) : 0;
         });
 
-        let achievedCount = 0; database.cpl.forEach((cpl, index) => { if (parseFloat(cplChartData[index] || 0) >= (cpl.target || 0)) achievedCount++; });
+        // [UPDATE OBE EXPERT]: Mengubah representasi bar ke-2 pada grafik PL menjadi "Progres Penyelesaian" agar lebih informatif
+        let plChartDataProgres = database.profilLulusan.map(pl => {
+            let sum = 0; let count = 0;
+            targetMhsList.forEach(mhs => { let s = getPlScore(mhs.username, pl.kode); if(s.progres > 0) { sum += s.progres; count++; } });
+            return count > 0 ? (sum/count).toFixed(1) : 0;
+        });
+
+        let achievedCount = 0; database.cpl.forEach((cpl, index) => { if (parseFloat(cplChartDataPerforma[index] || 0) >= (cpl.target || 0)) achievedCount++; });
         let cplAchievedPercentage = database.cpl.length > 0 ? Math.round((achievedCount / database.cpl.length) * 100) : 0;
 
-        let thCpl = database.cpl.map(c => `<th class="px-4 py-3 text-center" title="${c.deskripsi}">${c.kode}<br><span class="text-[9px] font-normal text-gray-400">Target: ${c.target || 0}%</span></th>`).join('');
-        let filterUI = currentUser.role === 'mahasiswa' ? `<div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 flex flex-col justify-center"><label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2"><i class="fas fa-user mr-1"></i> Profil Mahasiswa</label><div class="w-full px-3 py-2 rounded-xl border border-blue-100 bg-blue-50 text-sm font-bold text-blue-700 overflow-hidden truncate">${currentUser.username} - ${currentUser.name}</div></div>` : `<div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 flex flex-col justify-center"><label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2"><i class="fas fa-filter mr-1"></i> Filter Analisis</label><select class="w-full px-3 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm font-bold text-gray-700 bg-gray-50 cursor-pointer transition" onchange="renderLaporan(this.value)">${mhsOptions}</select></div>`;
+        let thCpl = database.cpl.map(c => `<th class="px-5 py-4 text-center border-l border-gray-100" title="${c.deskripsi}">${c.kode}<br><span class="text-[9px] font-bold text-gray-400">Target: ${c.target || 0}%</span></th>`).join('');
+        
+        let filterUI = currentUser.role === 'mahasiswa' ? `<div class="bg-white p-7 rounded-[2rem] card-shadow border border-gray-100 flex flex-col justify-center"><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-3"><i class="fas fa-user mr-1 text-brand"></i> Profil Mahasiswa</label><div class="w-full px-4 py-3 rounded-xl border border-brand-soft bg-brand-soft text-sm font-bold text-brand overflow-hidden truncate">${currentUser.username} - ${currentUser.name}</div></div>` : `<div class="bg-white p-7 rounded-[2rem] card-shadow border border-gray-100 flex flex-col justify-center"><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-3"><i class="fas fa-filter mr-1 text-brand"></i> Filter Analisis</label><select class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand outline-none text-sm font-bold text-gray-800 bg-gray-50 cursor-pointer transition" onchange="renderLaporan(this.value)">${mhsOptions}</select></div>`;
 
-        container.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">${filterUI}<div class="bg-gradient-to-r from-blue-600 to-blue-500 p-5 rounded-2xl shadow-lg border border-transparent flex items-center justify-between text-white overflow-hidden relative"><i class="fas fa-chart-pie absolute -right-6 -bottom-6 text-7xl opacity-20 transform rotate-12"></i><div><p class="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-0.5">Pemenuhan CPL Berjalan</p><h3 class="text-3xl font-black">${cplAchievedPercentage}<span class="text-base font-bold text-blue-200">%</span></h3></div><button onclick="downloadLaporanCPL()" class="bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-xl text-sm font-bold transition flex items-center border border-white/20"><i class="fas fa-file-excel mr-2"></i> Ekspor</button></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6"><div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200"><h4 class="font-bold text-gray-800 text-sm mb-4"><i class="fas fa-chart-radar text-blue-500 mr-2"></i> Analisis CPL Berjalan</h4><div class="relative h-64 w-full flex justify-center"><canvas id="cplChart"></canvas></div></div><div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200"><h4 class="font-bold text-gray-800 text-sm mb-4"><i class="fas fa-user-tie text-purple-500 mr-2"></i> Ketercapaian Profil Lulusan (PL)</h4><div class="relative h-64 w-full flex justify-center"><canvas id="plChart"></canvas></div></div></div><div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 overflow-hidden"><h4 class="font-bold text-lg text-gray-800 mb-4"><i class="fas fa-table text-blue-500 mr-2"></i> Matriks Nilai CPL Berjalan Mahasiswa</h4><div class="overflow-x-auto border border-gray-100 rounded-xl relative shadow-inner custom-scrollbar w-full"><table class="w-full text-left whitespace-nowrap" id="table-laporan-cpl"><thead class="bg-gray-50/90 text-[11px] uppercase tracking-widest text-gray-500 font-bold border-b border-gray-200"><tr><th class="px-4 py-4 sticky left-0 bg-gray-50 z-20 border-r border-gray-200">NIM</th><th class="px-4 py-4">Nama Mahasiswa</th>${thCpl}</tr></thead><tbody class="divide-y divide-gray-50 bg-white">${tableRows}</tbody></table></div></div>`;
+        container.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">${filterUI}<div class="bg-gradient-to-br from-brand-blue to-brand-light p-7 rounded-[2rem] shadow-xl shadow-brand-light/20 border border-transparent flex items-center justify-between text-white overflow-hidden relative"><i class="fas fa-chart-pie absolute -right-6 -bottom-6 text-7xl opacity-20 transform rotate-12"></i><div class="relative z-10"><p class="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-1">CPL Memenuhi Target</p><h3 class="text-4xl font-black">${cplAchievedPercentage}<span class="text-lg font-bold text-blue-200 ml-1">%</span></h3></div><button onclick="downloadLaporanCPL()" class="bg-white/20 hover:bg-white/30 backdrop-blur-md px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center border border-white/20 relative z-10 tracking-wide"><i class="fas fa-file-excel mr-2"></i> Ekspor</button></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"><div class="bg-white p-8 rounded-[2rem] card-shadow border border-gray-100"><h4 class="font-extrabold text-gray-900 text-base mb-6 tracking-tight"><i class="fas fa-chart-radar text-brand-light mr-2"></i> Analisis Performa CPL Berjalan</h4><div class="relative h-72 w-full flex justify-center"><canvas id="cplChart"></canvas></div></div><div class="bg-white p-8 rounded-[2rem] card-shadow border border-gray-100"><h4 class="font-extrabold text-gray-900 text-base mb-6 tracking-tight"><i class="fas fa-user-tie text-brand mr-2"></i> Ketercapaian Profil Lulusan (PL)</h4><div class="relative h-72 w-full flex justify-center"><canvas id="plChart"></canvas></div></div></div><div class="bg-white rounded-[2rem] card-shadow border border-gray-100 p-8 overflow-hidden"><h4 class="font-extrabold text-xl text-gray-900 mb-6 tracking-tight"><i class="fas fa-table text-brand-light mr-2"></i> Matriks Performa & Progres Mahasiswa</h4><div class="overflow-x-auto border border-gray-100 rounded-2xl relative shadow-sm custom-scrollbar w-full"><table class="w-full text-left whitespace-nowrap" id="table-laporan-cpl"><thead class="bg-gray-50/90 text-[10px] uppercase tracking-widest text-gray-400 font-extrabold border-b border-gray-100"><tr><th class="px-5 py-5 sticky left-0 bg-gray-50 z-20 border-r border-gray-100">NIM</th><th class="px-5 py-5">Nama Mahasiswa</th>${thCpl}</tr></thead><tbody class="divide-y divide-gray-50/80 bg-white">${tableRows}</tbody></table><p class="text-xs text-gray-400 mt-4 font-medium"><i class="fas fa-info-circle mr-1"></i> Angka menunjukkan kualitas performa CPL berjalan. Baris progres di bawah angka menunjukkan persentase pemenuhan bobot kurikulum.</p></div></div>`;
 
         setTimeout(() => {
-            new Chart(document.getElementById('cplChart').getContext('2d'), { type: 'radar', data: { labels: cplLabels, datasets: [{ label: 'Capaian Berjalan', data: cplChartData, backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: '#3b82f6', pointBackgroundColor: '#3b82f6', borderWidth: 2 }, { label: 'Target', data: cplTarget, backgroundColor: 'rgba(248, 113, 113, 0.1)', borderColor: '#f87171', borderDash: [5, 5], pointBackgroundColor: '#f87171', borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100 } } } });
-            new Chart(document.getElementById('plChart').getContext('2d'), { type: 'bar', data: { labels: plLabels, datasets: [{ label: 'Capaian Profil (%)', data: plChartData, backgroundColor: '#8b5cf6', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } }, plugins: { legend: { display: false } } } });
+            new Chart(document.getElementById('cplChart').getContext('2d'), { type: 'radar', data: { labels: cplLabels, datasets: [{ label: 'Performa Kualitas', data: cplChartDataPerforma, backgroundColor: 'rgba(0, 86, 179, 0.15)', borderColor: '#0056b3', pointBackgroundColor: '#0056b3', borderWidth: 2.5 }, { label: 'Target Minimal', data: cplTarget, backgroundColor: 'rgba(248, 113, 113, 0.1)', borderColor: '#f87171', borderDash: [5, 5], pointBackgroundColor: '#f87171', borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100, grid: { color: '#f3f4f6' }, angleLines: { color: '#e5e7eb' } } } } });
+            
+            // Grafik Grouped Bar untuk PL (Performa vs Progres Penyelesaian)
+            new Chart(document.getElementById('plChart').getContext('2d'), { 
+                type: 'bar', 
+                data: { 
+                    labels: plLabels, 
+                    datasets: [
+                        { label: 'Performa Kualitas (%)', data: plChartDataPerforma, backgroundColor: '#112a6a', borderRadius: 6 },
+                        { label: 'Persentase Progres (%)', data: plChartDataProgres, backgroundColor: '#007bff', borderRadius: 6 }
+                    ] 
+                }, 
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100, grid: { borderDash: [4, 4] } }, x: { grid: { display: false } } }, plugins: { legend: { display: true, position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } } } 
+            });
         }, 150);
     }
 
@@ -885,7 +1066,7 @@
         let st = database.settings && database.settings.length > 0 ? database.settings[0] : { namaProdi: '', fakultas: '', kaprodi: '', logoUrl: '' };
         const defaultLogoSVG = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239CA3AF'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' /></svg>";
 
-        container.innerHTML = `<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 max-w-4xl"><div class="flex flex-col md:flex-row gap-8"><div class="w-full md:w-1/3 flex flex-col items-center"><label class="block text-sm font-bold text-gray-700 mb-4">Logo Instansi</label><div class="w-48 h-48 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50 overflow-hidden relative group"><img id="preview-logo" src="${st.logoUrl || defaultLogoSVG}" class="w-full h-full object-contain ${st.logoUrl ? '' : 'p-8'}" /><div class="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" onclick="document.getElementById('upload-logo').click()"><i class="fas fa-camera text-white text-3xl mb-2"></i><span class="text-white text-xs font-bold">Ubah Logo</span></div></div><input type="file" id="upload-logo" accept="image/*" class="hidden" onchange="handleLogoChange(this)"><input type="hidden" id="logo-base64" value="${st.logoUrl || ''}"><p class="text-[10px] text-gray-400 mt-3 text-center w-full">Klik area di atas untuk mengganti logo. <br>Otomatis disesuaikan ke ukuran ideal.</p></div><div class="w-full md:w-2/3 space-y-6"><div><label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Nama Program Studi</label><input type="text" id="f-prodi" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold text-gray-800" placeholder="Contoh: S1 Teknik Informatika" value="${st.namaProdi || ''}"></div><div><label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Fakultas</label><input type="text" id="f-fakultas" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold text-gray-800" placeholder="Contoh: Fakultas Ilmu Komputer" value="${st.fakultas || ''}"></div><div><label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Nama Ketua Program Studi</label><input type="text" id="f-kaprodi" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold text-gray-800" placeholder="Beserta gelar akademik..." value="${st.kaprodi || ''}"></div><div class="pt-6 border-t border-gray-100 flex justify-end"><button onclick="saveSettings()" id="btn-save-settings" class="bg-blue-600 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition flex items-center"><i class="fas fa-save mr-2 text-lg"></i> Simpan Pengaturan Instansi</button></div></div></div></div>`;
+        container.innerHTML = `<div class="bg-white rounded-[2rem] card-shadow border border-gray-100 p-8 md:p-10 max-w-4xl"><div class="flex flex-col md:flex-row gap-10"><div class="w-full md:w-1/3 flex flex-col items-center"><label class="block text-sm font-extrabold text-gray-800 mb-5">Logo Instansi</label><div class="w-52 h-52 rounded-3xl border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50 overflow-hidden relative group hover:border-brand transition-colors"><img id="preview-logo" src="${st.logoUrl || defaultLogoSVG}" class="w-full h-full object-contain ${st.logoUrl ? '' : 'p-10'}" /><div class="absolute inset-0 bg-brand-dark/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" onclick="document.getElementById('upload-logo').click()"><i class="fas fa-camera text-white text-3xl mb-3"></i><span class="text-white text-xs font-bold tracking-wide">Ubah Logo</span></div></div><input type="file" id="upload-logo" accept="image/*" class="hidden" onchange="handleLogoChange(this)"><input type="hidden" id="logo-base64" value="${st.logoUrl || ''}"><p class="text-[10px] text-gray-400 mt-4 text-center font-medium w-full leading-relaxed">Klik area di atas untuk mengganti logo. <br>Otomatis disesuaikan ke ukuran ideal.</p></div><div class="w-full md:w-2/3 space-y-6 mt-2"><div><label class="block text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-2">Nama Program Studi</label><input type="text" id="f-prodi" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 focus:ring-2 focus:ring-brand focus:bg-white outline-none text-sm font-bold text-gray-800 transition-all" placeholder="Contoh: S1 Teknik Informatika" value="${st.namaProdi || ''}"></div><div><label class="block text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-2">Fakultas</label><input type="text" id="f-fakultas" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 focus:ring-2 focus:ring-brand focus:bg-white outline-none text-sm font-bold text-gray-800 transition-all" placeholder="Contoh: Fakultas Ilmu Komputer" value="${st.fakultas || ''}"></div><div><label class="block text-xs font-extrabold text-gray-400 uppercase tracking-widest mb-2">Nama Ketua Program Studi</label><input type="text" id="f-kaprodi" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 focus:ring-2 focus:ring-brand focus:bg-white outline-none text-sm font-bold text-gray-800 transition-all" placeholder="Beserta gelar akademik..." value="${st.kaprodi || ''}"></div><div class="pt-8 mt-4 border-t border-gray-100 flex justify-end"><button onclick="saveSettings()" id="btn-save-settings" class="bg-brand text-white px-8 py-3.5 rounded-xl text-sm font-bold shadow-lg shadow-brand/20 hover:bg-brand-dark transition flex items-center tracking-wide"><i class="fas fa-save mr-2 text-lg"></i> Simpan Pengaturan Instansi</button></div></div></div></div>`;
     }
 
     window.handleLogoChange = function(input) {
@@ -899,7 +1080,7 @@
                 canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
                 let dataUrl = canvas.toDataURL('image/png'); if (dataUrl.length > 48000) dataUrl = canvas.toDataURL('image/jpeg', 0.8);
                 if (dataUrl.length > 50000) { showCustomDialog('alert', "Detail logo terlalu padat."); return; }
-                const preview = document.getElementById('preview-logo'); preview.src = dataUrl; preview.classList.remove('p-8'); document.getElementById('logo-base64').value = dataUrl;
+                const preview = document.getElementById('preview-logo'); preview.src = dataUrl; preview.classList.remove('p-10'); document.getElementById('logo-base64').value = dataUrl;
             }
             img.src = e.target.result;
         };
@@ -919,7 +1100,7 @@
         let st = database.settings && database.settings.length > 0 ? database.settings[0] : null;
         if (st) {
             document.querySelectorAll('.app-brand-name').forEach(el => el.innerText = st.namaProdi || "OBE Tracker v3"); document.querySelectorAll('.app-brand-fakultas').forEach(el => el.innerText = st.fakultas || "Sistem Capaian Pembelajaran Lulusan");
-            if (st.logoUrl) { document.querySelectorAll('.app-brand-icon').forEach(el => { el.innerHTML = `<img src="${st.logoUrl}" class="w-full h-full object-contain" />`; el.classList.remove('p-1.5', 'p-2'); el.classList.add('bg-transparent'); }); document.querySelectorAll('.app-brand-icon-login').forEach(el => { el.innerHTML = `<img src="${st.logoUrl}" class="w-full h-full object-contain" />`; el.classList.add('bg-transparent'); }); }
+            if (st.logoUrl) { document.querySelectorAll('.app-brand-icon').forEach(el => { el.innerHTML = `<img src="${st.logoUrl}" class="w-full h-full object-contain" />`; el.classList.remove('p-1.5', 'p-2'); el.classList.add('bg-transparent'); }); document.querySelectorAll('.app-brand-icon-login').forEach(el => { el.innerHTML = `<img src="${st.logoUrl}" class="w-full h-full object-contain" />`; el.classList.add('bg-transparent'); el.classList.remove('hidden'); }); }
         }
     }
 
@@ -932,27 +1113,27 @@
         if(type === 'mhs' || type === 'dosen') {
             formHtml = `
             <div class="space-y-4">
-                <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">${type==='mhs'?'NIM':'NIDN'}</label><input type="text" id="f-user" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none text-sm ${isEdit?'bg-gray-100':''}" value="${isEdit?editItem.username:''}" ${isEdit?'readonly':''}></div>
-                <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Nama Lengkap</label><input type="text" id="f-name" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none text-sm" value="${isEdit?editItem.name:''}"></div>
-                ${type === 'mhs' ? `<div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Angkatan</label><input type="number" id="f-angkatan" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none text-sm" value="${isEdit?(editItem.angkatan||''):''}" placeholder="Contoh: 2024"></div>` : ''}
-                <div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Password</label><input type="password" id="f-pass" class="w-full px-4 py-3 rounded-xl border border-gray-200 outline-none text-sm" value="${isEdit?editItem.password:'edudigital'}"></div>
+                <div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">${type==='mhs'?'NIM':'NIDN'}</label><input type="text" id="f-user" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all ${isEdit?'bg-gray-100 cursor-not-allowed':''}" value="${isEdit?editItem.username:''}" ${isEdit?'readonly':''}></div>
+                <div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Nama Lengkap</label><input type="text" id="f-name" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all" value="${isEdit?editItem.name:''}"></div>
+                ${type === 'mhs' ? `<div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Angkatan</label><input type="number" id="f-angkatan" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all" value="${isEdit?(editItem.angkatan||''):''}" placeholder="Contoh: 2024"></div>` : ''}
+                <div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Password</label><input type="password" id="f-pass" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all" value="${isEdit?editItem.password:'edudigital'}"></div>
             </div>`;
         } else if(type === 'profil') {
-            formHtml = `<div class="space-y-4"><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Kode Profil Lulusan</label><input type="text" id="f-kode" class="w-full px-4 py-3 border rounded-xl ${isEdit?'bg-gray-100':''}" value="${isEdit?editItem.kode:''}" ${isEdit?'readonly':''}></div><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Deskripsi Profil</label><textarea id="f-desc" class="w-full px-4 py-3 border rounded-xl h-24">${isEdit?editItem.deskripsi:''}</textarea></div></div>`;
+            formHtml = `<div class="space-y-4"><div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Kode Profil Lulusan</label><input type="text" id="f-kode" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all ${isEdit?'bg-gray-100 cursor-not-allowed':''}" value="${isEdit?editItem.kode:''}" ${isEdit?'readonly':''}></div><div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Deskripsi Profil</label><textarea id="f-desc" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all h-28">${isEdit?editItem.deskripsi:''}</textarea></div></div>`;
         } else if(type === 'cpl') {
-            formHtml = `<div class="space-y-4"><div class="grid grid-cols-2 gap-4"><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Kode CPL</label><input type="text" id="f-kode" class="w-full px-4 py-3 border rounded-xl ${isEdit?'bg-gray-100':''}" value="${isEdit?editItem.kode:''}" ${isEdit?'readonly':''}></div><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Target (%)</label><input type="number" id="f-target" class="w-full px-4 py-3 border rounded-xl" value="${isEdit?editItem.target:'70'}"></div></div><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Deskripsi</label><textarea id="f-desc" class="w-full px-4 py-3 border rounded-xl h-24">${isEdit?editItem.deskripsi:''}</textarea></div></div>`;
+            formHtml = `<div class="space-y-4"><div class="grid grid-cols-2 gap-5"><div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Kode CPL</label><input type="text" id="f-kode" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all ${isEdit?'bg-gray-100 cursor-not-allowed':''}" value="${isEdit?editItem.kode:''}" ${isEdit?'readonly':''}></div><div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Target (%)</label><input type="number" id="f-target" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all" value="${isEdit?editItem.target:'70'}"></div></div><div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Deskripsi</label><textarea id="f-desc" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all h-28">${isEdit?editItem.deskripsi:''}</textarea></div></div>`;
         } else if(type === 'mk') {
-            formHtml = `<div class="space-y-4"><div class="grid grid-cols-3 gap-4"><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Kode MK</label><input type="text" id="f-kode" class="w-full px-4 py-3 border rounded-xl ${isEdit?'bg-gray-100':''}" value="${isEdit?editItem.kode:''}" ${isEdit?'readonly':''}></div><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">SKS</label><input type="number" id="f-sks" class="w-full px-4 py-3 border rounded-xl" value="${isEdit?editItem.sks:'3'}"></div><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Smt</label><input type="number" id="f-smt" class="w-full px-4 py-3 border rounded-xl" value="${isEdit?editItem.semester:''}"></div></div><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Nama MK</label><input type="text" id="f-name" class="w-full px-4 py-3 border rounded-xl" value="${isEdit?editItem.nama:''}"></div></div>`;
+            formHtml = `<div class="space-y-4"><div class="grid grid-cols-3 gap-4"><div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Kode MK</label><input type="text" id="f-kode" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all ${isEdit?'bg-gray-100 cursor-not-allowed':''}" value="${isEdit?editItem.kode:''}" ${isEdit?'readonly':''}></div><div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">SKS</label><input type="number" id="f-sks" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all" value="${isEdit?editItem.sks:'3'}"></div><div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Smt</label><input type="number" id="f-smt" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all" value="${isEdit?editItem.semester:''}"></div></div><div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Nama MK</label><input type="text" id="f-name" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all" value="${isEdit?editItem.nama:''}"></div></div>`;
         } else if(type === 'cpmk') {
             let mkOptions = database.mk.map(m => `<option value="${m.kode}" ${isEdit && editItem.mk === m.kode ? 'selected' : ''}>${m.kode} - ${m.nama}</option>`).join('');
-            formHtml = `<div class="space-y-4"><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Mata Kuliah</label><select id="f-mk" class="w-full px-4 py-3 rounded-xl border bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"><option value="">-- Pilih Mata Kuliah --</option>${mkOptions}</select></div><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Kode CPMK</label><input type="text" id="f-kode" class="w-full px-4 py-3 rounded-xl border outline-none focus:ring-2 focus:ring-blue-500 text-sm" value="${isEdit?editItem.kode:''}" placeholder="Contoh: CPMK-1"></div><div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Deskripsi Capaian</label><textarea id="f-desc" class="w-full px-4 py-3 rounded-xl border h-24 outline-none focus:ring-2 focus:ring-blue-500 text-sm">${isEdit?editItem.deskripsi:''}</textarea></div></div>`;
+            formHtml = `<div class="space-y-4"><div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Mata Kuliah</label><select id="f-mk" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all"><option value="">-- Pilih Mata Kuliah --</option>${mkOptions}</select></div><div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Kode CPMK</label><input type="text" id="f-kode" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all" value="${isEdit?editItem.kode:''}" placeholder="Contoh: CPMK-1"></div><div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Deskripsi Capaian</label><textarea id="f-desc" class="w-full px-5 py-3.5 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all h-28">${isEdit?editItem.deskripsi:''}</textarea></div></div>`;
         } else if (type === 'nilai') {
             const activeCpmks = database.cpmk.filter(c => c.mk === currentSelectedMkNilai);
             let inputCpmkHtml = activeCpmks.map(c => {
                 const n = isEdit ? database.nilaiCpmk.find(x => x.mhs === editItem.username && x.mk === currentSelectedMkNilai && x.cpmk === c.kode) : null;
-                return `<div><label class="block text-xs font-bold text-gray-400 uppercase mb-1">Nilai ${c.kode}</label><input type="number" id="fnilai_${c.kode}" class="w-full px-4 py-2 border rounded-xl fnilai-input" value="${n ? n.nilai : ''}"></div>`;
+                return `<div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Nilai ${c.kode}</label><input type="number" id="fnilai_${c.kode}" class="w-full px-5 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all fnilai-input" value="${n ? n.nilai : ''}"></div>`;
             }).join('');
-            formHtml = `<div class="space-y-4"><div class="bg-blue-50 p-3 rounded-xl mb-4 text-xs"><p class="font-bold text-blue-700">${isEdit ? editItem.name : '-'}</p><p class="text-blue-600">${currentSelectedMkNilai}</p></div><div class="grid grid-cols-2 gap-4">${inputCpmkHtml}</div></div>`;
+            formHtml = `<div class="space-y-4"><div class="bg-brand-soft p-4 rounded-2xl mb-5 text-sm border border-blue-100"><p class="font-extrabold text-brand tracking-tight mb-1">${isEdit ? editItem.name : '-'}</p><p class="text-brand-light font-semibold text-xs">${currentSelectedMkNilai}</p></div><div class="grid grid-cols-2 gap-5">${inputCpmkHtml}</div></div>`;
         }
         
         document.getElementById('modal-body').innerHTML = formHtml; document.getElementById('modal-container').classList.add('modal-active');
