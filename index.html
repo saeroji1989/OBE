@@ -118,17 +118,13 @@
 
             <!-- Left Side (Blue Branding) -->
             <div class="hidden md:flex flex-col justify-center w-1/2 p-12 text-white relative overflow-hidden bg-gradient-to-br from-brand-blue to-brand-light">
-                <!-- Decorative 3D Spheres -->
                 <div class="absolute -top-10 -left-10 w-64 h-64 sphere-3d opacity-80"></div>
                 <div class="absolute bottom-10 -left-20 w-80 h-80 sphere-3d z-0"></div>
                 <div class="absolute -bottom-16 right-10 w-56 h-56 sphere-3d z-0"></div>
                 <div class="absolute top-1/4 -right-10 w-32 h-32 sphere-3d opacity-90 z-0"></div>
 
-                <!-- Content -->
                 <div class="relative z-10 pl-6">
-                    <!-- Icon placeholder for dynamic branding -->
                     <div class="w-12 h-12 mb-6 hidden app-brand-icon-login"></div> 
-                    
                     <h2 class="text-4xl font-black tracking-widest mb-1 uppercase drop-shadow-md">WELCOME</h2>
                     <h1 class="text-xl font-bold mb-6 app-brand-name tracking-wide text-blue-50">OBE TRACKER V3</h1>
                     <p class="text-xs text-blue-100/90 leading-relaxed font-medium max-w-sm app-brand-fakultas">
@@ -139,7 +135,6 @@
 
             <!-- Right Side (Login Form) -->
             <div class="w-full md:w-1/2 p-8 md:p-14 flex flex-col justify-center bg-white relative h-full">
-                <!-- Mobile Background Decoration (Visible only on mobile) -->
                 <div class="md:hidden absolute top-0 left-0 w-full h-40 bg-gradient-to-br from-brand-blue to-brand-light rounded-b-[3rem] z-0 flex items-center justify-center">
                     <h2 class="text-3xl font-black tracking-widest text-white uppercase drop-shadow-md">WELCOME</h2>
                 </div>
@@ -151,44 +146,25 @@
                     </div>
 
                     <div class="space-y-4">
-                        <!-- Username -->
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <i class="fas fa-user text-gray-400 text-sm"></i>
-                            </div>
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="fas fa-user text-gray-400 text-sm"></i></div>
                             <input type="text" id="username" class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-100 rounded-xl text-gray-800 font-semibold focus:ring-2 focus:ring-brand focus:bg-white transition-all outline-none text-sm placeholder-gray-400" placeholder="User Name / NIM / NIDN">
                         </div>
 
-                        <!-- Password -->
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <i class="fas fa-lock text-gray-400 text-sm"></i>
-                            </div>
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><i class="fas fa-lock text-gray-400 text-sm"></i></div>
                             <input type="password" id="password" class="w-full pl-11 pr-16 py-3.5 bg-gray-50 border border-gray-100 rounded-xl text-gray-800 font-semibold focus:ring-2 focus:ring-brand focus:bg-white transition-all outline-none text-sm placeholder-gray-400" placeholder="Password">
-                            <button type="button" onclick="togglePasswordDisplay()" class="absolute inset-y-0 right-0 pr-4 flex items-center text-xs font-bold text-brand hover:text-brand-light transition">
-                                SHOW
-                            </button>
+                            <button type="button" onclick="togglePasswordDisplay()" class="absolute inset-y-0 right-0 pr-4 flex items-center text-xs font-bold text-brand hover:text-brand-light transition">SHOW</button>
                         </div>
 
-                        <!-- Options -->
-                        <div class="flex items-center justify-between pt-2">
-                            <label class="flex items-center text-xs text-gray-500 cursor-pointer group">
-                                <input type="checkbox" class="mr-2 w-3.5 h-3.5 rounded border-gray-300 text-brand focus:ring-brand">
-                                <span class="font-medium group-hover:text-gray-700 transition">Remember me</span>
-                            </label>
-                        </div>
-
-                        <!-- Error Message -->
                         <div id="login-msg" class="text-center text-xs font-bold text-red-500 hidden bg-red-50 py-2.5 rounded-lg border border-red-100">Username atau password salah!</div>
 
-                        <!-- Primary Button -->
                         <button onclick="handleLogin()" id="login-btn" class="w-full bg-brand hover:bg-brand-dark text-white font-bold py-3.5 rounded-xl shadow-lg shadow-brand/30 transition-all duration-300 mt-6 text-sm tracking-wide">
                             Sign in
                         </button>
                     </div>
                 </div>
             </div>
-            <!-- Decorative bottom right shape (hidden on mobile) -->
             <div class="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-tl from-brand-light to-brand-blue rounded-tl-[100px] md:block hidden z-0 opacity-90 translate-x-4 translate-y-4"></div>
         </div>
     </div>
@@ -249,17 +225,12 @@
 
         <!-- Content Area -->
         <div class="flex-1 overflow-y-auto custom-scrollbar w-full h-full relative p-4 md:p-8">
-            <!-- Header Mobile / Top -->
             <div class="flex justify-between items-center mb-8">
                 <div>
                     <h2 id="page-title" class="text-3xl font-extrabold text-gray-900 tracking-tight">Ringkasan Capaian</h2>
                     <p id="page-desc" class="text-gray-500 text-sm mt-1.5 font-medium">Selamat datang kembali di dashboard Anda.</p>
                 </div>
-                <div id="loading-spinner" class="hidden">
-                    <i class="fas fa-circle-notch fa-spin text-brand text-2xl"></i>
-                </div>
             </div>
-
             <div id="content-view" class="pb-10">
                 <!-- Konten dinamis akan dimuat di sini -->
             </div>
@@ -274,9 +245,7 @@
             <h3 id="modal-title" class="font-extrabold text-gray-900 text-lg">Formulir Data</h3>
             <button onclick="closeModal()" class="text-gray-300 hover:text-red-500 transition bg-gray-50 hover:bg-red-50 w-8 h-8 rounded-full flex items-center justify-center"><i class="fas fa-times"></i></button>
         </div>
-        <div id="modal-body" class="p-8 overflow-y-auto grow custom-scrollbar">
-            <!-- Form content will be injected here -->
-        </div>
+        <div id="modal-body" class="p-8 overflow-y-auto grow custom-scrollbar"></div>
         <div class="px-8 py-5 bg-gray-50/50 border-t border-gray-100 flex justify-end space-x-3 shrink-0">
             <button onclick="closeModal()" class="px-5 py-2.5 text-sm font-bold text-gray-500 hover:text-gray-800 transition">Batal</button>
             <button id="modal-submit" class="bg-brand text-white px-7 py-2.5 rounded-xl text-sm font-bold hover:bg-brand-dark shadow-lg shadow-brand/20 transition tracking-wide">Simpan Data</button>
@@ -284,7 +253,7 @@
     </div>
 </div>
 
-<!-- DIALOG MODAL (PENGGANTI ALERT & CONFIRM) -->
+<!-- DIALOG MODAL -->
 <div id="dialog-modal" class="fixed inset-0 z-[12000] modal-overlay bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden modal-content">
         <div class="p-8 text-center">
@@ -309,9 +278,8 @@
     </div>
 </div>
 
-<!-- TEMPLATE SCRIPTS & LOGIC -->
 <script>
-    // --- KONFIGURASI APLIKASI & DETEKSI OTOMATIS ---
+    // --- KONFIGURASI APLIKASI ---
     const IS_PREVIEW = true;
     const GAS_URL = "URL_DEPLOY_GAS_ANDA_DISINI"; 
     const IS_GAS_ENV = typeof google !== 'undefined' && google.script && google.script.run;
@@ -370,59 +338,33 @@
         ]
     };
 
-    // --- FITUR SHOW/HIDE PASSWORD TAMBAHAN UI BARU ---
     window.togglePasswordDisplay = function() {
         const passInput = document.getElementById('password');
         const showBtn = event.currentTarget;
-        if (passInput.type === 'password') {
-            passInput.type = 'text';
-            showBtn.innerText = 'HIDE';
-        } else {
-            passInput.type = 'password';
-            showBtn.innerText = 'SHOW';
-        }
+        if (passInput.type === 'password') { passInput.type = 'text'; showBtn.innerText = 'HIDE'; } else { passInput.type = 'password'; showBtn.innerText = 'SHOW'; }
     };
 
-    // --- INISIALISASI (FETCH ALL DATA) ---
+    // --- INISIALISASI ---
     document.addEventListener("DOMContentLoaded", () => {
         if (IS_GAS_ENV) {
-            google.script.run.withSuccessHandler(data => {
-                database = data;
-                tutupLoadingScreen();
-            }).getAllData();
+            google.script.run.withSuccessHandler(data => { database = data; tutupLoadingScreen(); }).getAllData();
         } else if (GAS_URL && GAS_URL.startsWith("https://script.google.com/")) {
             document.getElementById('loading-text').innerText = "Terhubung ke Database Eksternal...";
-            fetch(GAS_URL + "?action=getAllData")
-                .then(response => response.json())
-                .then(data => {
-                    database = data;
-                    tutupLoadingScreen();
-                })
-                .catch(error => {
-                    console.error("Gagal memuat data dari Web App. Memuat DUMMY_DATA", error);
-                    database = JSON.parse(JSON.stringify(DUMMY_DATA));
-                    tutupLoadingScreen();
-                });
+            fetch(GAS_URL + "?action=getAllData").then(r => r.json()).then(data => { database = data; tutupLoadingScreen(); })
+            .catch(error => { console.error(error); database = JSON.parse(JSON.stringify(DUMMY_DATA)); tutupLoadingScreen(); });
         } else {
-            database = JSON.parse(JSON.stringify(DUMMY_DATA));
-            tutupLoadingScreen();
+            database = JSON.parse(JSON.stringify(DUMMY_DATA)); tutupLoadingScreen();
         }
     });
 
     function tutupLoadingScreen() {
         updateBranding(); 
-        const loader = document.getElementById('global-loading');
-        loader.style.opacity = '0';
-        setTimeout(() => {
-            loader.classList.add('hidden');
-            document.getElementById('login-page').classList.remove('hidden');
-        }, 500);
+        const loader = document.getElementById('global-loading'); loader.style.opacity = '0';
+        setTimeout(() => { loader.classList.add('hidden'); document.getElementById('login-page').classList.remove('hidden'); }, 500);
     }
 
-    // --- BACKGROUND SYNC MECHANISM (DEBOUNCED & OPTIMISTIC) ---
-    let syncTimers = {};
-    let pendingSyncs = new Set(); // Tracks active syncs
-
+    // --- BACKGROUND SYNC ---
+    let syncTimers = {}; let pendingSyncs = new Set();
     function backgroundSync(table) {
         let headers = [];
         if(table === 'settings') headers = ['id', 'namaProdi', 'fakultas', 'kaprodi', 'logoUrl'];
@@ -436,109 +378,56 @@
         else if(table === 'bobotCpmk') headers = ['mk', 'cpmk', 'bobot'];
         else if(table === 'nilaiCpmk') headers = ['id', 'mhs', 'mk', 'cpmk', 'nilai'];
 
-        // Hapus timer lama jika pengguna menginput secara beruntun (Debounce)
-        if (syncTimers[table]) {
-            clearTimeout(syncTimers[table]);
-        }
-
-        // Buat delay 1.5 detik. Pengiriman data ke Google Sheets hanya dilakukan 
-        // setelah user "istirahat" mengedit (mencegah limit exceeded GAS).
-        syncTimers[table] = setTimeout(() => {
-            executeSync(table, headers);
-        }, 1500);
+        if (syncTimers[table]) { clearTimeout(syncTimers[table]); }
+        syncTimers[table] = setTimeout(() => { executeSync(table, headers); }, 1500);
     }
 
     function executeSync(table, headers) {
-        const syncIndicator = document.getElementById('sync-indicator');
-        pendingSyncs.add(table);
-        if (syncIndicator) syncIndicator.classList.remove('hidden');
+        const syncIndicator = document.getElementById('sync-indicator'); pendingSyncs.add(table); if (syncIndicator) syncIndicator.classList.remove('hidden');
+        const finalizeSync = () => { pendingSyncs.delete(table); if (pendingSyncs.size === 0 && syncIndicator) { syncIndicator.classList.add('hidden'); } };
 
-        const finalizeSync = () => {
-            pendingSyncs.delete(table);
-            if (pendingSyncs.size === 0 && syncIndicator) {
-                syncIndicator.classList.add('hidden');
-            }
-        };
-
-        if (IS_GAS_ENV) {
-            google.script.run
-                .withSuccessHandler(finalizeSync)
-                .withFailureHandler((error) => {
-                    console.error("Sinkronisasi gagal", error);
-                    finalizeSync();
-                })
-                .setTableData(table, headers, database[table]);
-        } else if (GAS_URL && GAS_URL.startsWith("https://script.google.com/")) {
-            fetch(GAS_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: 'setTableData', table: table, headers: headers, data: database[table] })
-            }).then(() => {
-                finalizeSync();
-            }).catch(error => {
-                console.error("Sinkronisasi gagal", error);
-                finalizeSync();
-                // Opsional: showToast("Koneksi internet tidak stabil, proses sinkronisasi tertunda.");
-            });
-        } else {
-            finalizeSync(); // Lingkungan dummy
-        }
+        if (IS_GAS_ENV) { google.script.run.withSuccessHandler(finalizeSync).withFailureHandler(() => finalizeSync()).setTableData(table, headers, database[table]); } 
+        else if (GAS_URL && GAS_URL.startsWith("https://script.google.com/")) {
+            fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'setTableData', table: table, headers: headers, data: database[table] }) })
+            .then(() => finalizeSync()).catch(() => finalizeSync());
+        } else { finalizeSync(); }
     }
 
     // --- EXCEL CORE FUNCTIONS ---
     window.downloadTemplate = function(type) {
-        let data = [];
-        let filename = `Template_${type.toUpperCase()}.xlsx`;
+        let data = []; let filename = `Template_${type.toUpperCase()}.xlsx`;
 
-        if (type === 'dosen') {
-            data = [{"ID / Username": "", "Nama Lengkap": "", "Password": "edudigital"}];
-        } else if (type === 'mhs') {
-            data = [{"NIM": "", "Nama Lengkap": "", "Angkatan": "", "Password": "edudigital"}];
-        } else if (type === 'profil') {
-            data = [{"Kode Profil": "PL-01", "Deskripsi Profil": ""}];
-        } else if (type === 'cpl') {
-            data = [{"Kode CPL": "CPL-01", "Deskripsi": "", "Target (%)": 70}];
-        } else if (type === 'mk') {
-            data = [{"Kode MK": "MK-01", "Nama MK": "", "SKS": 3, "Semester": 1}];
-        } else if (type === 'cpmk') {
-            data = [{"Kode CPMK": "CPMK-1", "Kode MK": "", "Deskripsi Capaian": ""}];
-        } else if (type === 'nilai') {
+        if (type === 'dosen') data = [{"ID / Username": "", "Nama Lengkap": "", "Password": "edudigital"}];
+        else if (type === 'mhs') data = [{"NIM": "", "Nama Lengkap": "", "Angkatan": "", "Password": "edudigital"}];
+        else if (type === 'profil') data = [{"Kode Profil": "PL-01", "Deskripsi Profil": ""}];
+        else if (type === 'cpl') data = [{"Kode CPL": "CPL-01", "Deskripsi": "", "Target (%)": 70}];
+        else if (type === 'mk') data = [{"Kode MK": "MK-01", "Nama MK": "", "SKS": 3, "Semester": 1}];
+        else if (type === 'cpmk') data = [{"Kode CPMK": "CPMK-1", "Kode MK": "", "Deskripsi Capaian": ""}];
+        else if (type === 'nilai') {
             if (!currentSelectedMkNilai) return showToast("Pilih Mata Kuliah terlebih dahulu!");
             filename = `Template_Nilai_${currentSelectedMkNilai}.xlsx`;
-            
             const activeCpmks = database.cpmk.filter(c => c.mk === currentSelectedMkNilai);
-            if (activeCpmks.length === 0) return showCustomDialog('alert', 'Mata Kuliah belum memiliki CPMK. Silakan lengkapi di Data Master.');
+            if (activeCpmks.length === 0) return showCustomDialog('alert', 'Mata Kuliah belum memiliki CPMK.');
 
             const students = database.users.filter(u => u.role === 'mahasiswa');
             data = students.map(s => {
                 let row = { "NIM": s.username, "Nama Mahasiswa": s.name };
-                activeCpmks.forEach(c => row[c.kode] = 0);
+                activeCpmks.forEach(c => row[c.kode] = "");
                 return row;
             });
-            if (data.length === 0) {
-                let row = { "NIM": "", "Nama Mahasiswa": "" };
-                activeCpmks.forEach(c => row[c.kode] = 0);
-                data = [row];
-            }
+            if (data.length === 0) { let row = { "NIM": "", "Nama Mahasiswa": "" }; activeCpmks.forEach(c => row[c.kode] = ""); data = [row]; }
         }
 
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Data");
-        XLSX.writeFile(wb, filename);
-        showToast("Template berhasil diunduh.");
+        const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Data"); XLSX.writeFile(wb, filename); showToast("Template berhasil diunduh.");
     };
 
     window.handleExcelUpload = function(input, type) {
-        const file = input.files[0];
-        if (!file) return;
-
+        const file = input.files[0]; if (!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
-            const arr = new Uint8Array(e.target.result);
-            const wb = XLSX.read(arr, { type: 'array' });
-            const sheet = wb.Sheets[wb.SheetNames[0]];
-            const json = XLSX.utils.sheet_to_json(sheet);
+            const arr = new Uint8Array(e.target.result); const wb = XLSX.read(arr, { type: 'array' });
+            const sheet = wb.Sheets[wb.SheetNames[0]]; const json = XLSX.utils.sheet_to_json(sheet);
 
             if (type === 'nilai') {
                 if (!currentSelectedMkNilai) return showToast("Pilih MK terlebih dahulu!");
@@ -551,10 +440,13 @@
                     
                     activeCpmks.forEach(c => {
                         database.nilaiCpmk = database.nilaiCpmk.filter(n => !(String(n.mhs).trim() === nim && String(n.mk).trim() === mkTarget && String(n.cpmk).trim() === String(c.kode).trim()));
-                        let score = parseFloat(row[c.kode] || 0);
-                        database.nilaiCpmk.push({
-                            id: Date.now() + Math.random(), mhs: nim, mk: mkTarget, cpmk: c.kode, nilai: score
-                        });
+                        let rawVal = row[c.kode];
+                        if (rawVal !== undefined && rawVal !== null && rawVal !== "") {
+                            let score = parseFloat(rawVal);
+                            if(!isNaN(score)) {
+                                database.nilaiCpmk.push({ id: Date.now() + Math.random(), mhs: nim, mk: mkTarget, cpmk: c.kode, nilai: score });
+                            }
+                        }
                     });
                 });
                 backgroundSync('nilaiCpmk'); renderInputNilai(currentSelectedMkNilai);
@@ -564,19 +456,28 @@
                     const id = String(row["NIM"] || row["ID / Username"] || "");
                     if (!id) return;
                     if (!database.users.find(u => u.username === id)) {
-                        database.users.push({ 
-                            id: Date.now() + Math.random(), 
-                            username: id, 
-                            name: row["Nama Lengkap"] || "User", 
-                            password: row["Password"] || "edudigital", 
-                            role: role,
-                            angkatan: type === 'mhs' ? (row["Angkatan"] || "") : ""
-                        });
+                        database.users.push({ id: Date.now() + Math.random(), username: id, name: row["Nama Lengkap"] || "User", password: row["Password"] || "edudigital", role: role, angkatan: type === 'mhs' ? (row["Angkatan"] || "") : "" });
                     }
                 });
                 backgroundSync('users'); switchUserTab('tab-' + type);
             } else if (type === 'profil' || type === 'cpl' || type === 'mk' || type === 'cpmk') {
-                showToast("Fungsi upload data master berjalan...");
+                let targetTable = type === 'profil' ? 'profilLulusan' : type;
+                json.forEach(row => {
+                    if (type === 'profil') {
+                        const kode = String(row["Kode Profil"] || "").trim();
+                        if (kode && !database.profilLulusan.find(p => p.kode === kode)) database.profilLulusan.push({ kode: kode, deskripsi: row["Deskripsi Profil"] || "" });
+                    } else if (type === 'cpl') {
+                        const kode = String(row["Kode CPL"] || "").trim();
+                        if (kode && !database.cpl.find(c => c.kode === kode)) database.cpl.push({ kode: kode, deskripsi: row["Deskripsi"] || "", target: parseFloat(row["Target (%)"]) || 0 });
+                    } else if (type === 'mk') {
+                        const kode = String(row["Kode MK"] || "").trim();
+                        if (kode && !database.mk.find(m => m.kode === kode)) database.mk.push({ kode: kode, nama: row["Nama MK"] || "", sks: parseInt(row["SKS"])||0, semester: parseInt(row["Semester"])||0 });
+                    } else if (type === 'cpmk') {
+                        const kode = String(row["Kode CPMK"] || "").trim(); const mk = String(row["Kode MK"] || "").trim();
+                        if (kode && mk && !database.cpmk.find(c => c.kode === kode && c.mk === mk)) database.cpmk.push({ kode: kode, mk: mk, deskripsi: row["Deskripsi Capaian"] || "" });
+                    }
+                });
+                backgroundSync(targetTable); switchMasterTab('tab-' + type);
             }
             showToast("Data berhasil diimpor!"); input.value = "";
         };
@@ -584,11 +485,8 @@
     };
 
     function handleLogin() {
-        const u = document.getElementById('username').value;
-        const p = document.getElementById('password').value;
-        const btn = document.getElementById('login-btn');
-        const msg = document.getElementById('login-msg');
-
+        const u = document.getElementById('username').value; const p = document.getElementById('password').value;
+        const btn = document.getElementById('login-btn'); const msg = document.getElementById('login-msg');
         btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses...';
         setTimeout(() => {
             const user = database.users.find(x => String(x.username) === String(u) && String(x.password) === String(p));
@@ -613,12 +511,7 @@
         document.getElementById('login-msg').classList.add('hidden');
     }
 
-    // --- OBE LEVEL 2 PURE CALCULATION (PERFORMA VS PEMENUHAN) ---
-    /**
-     * getCplStats memecah nilai menjadi dua dimensi OBE Murni:
-     * 1. performa: Rata-rata mutu dari MK yang SUDAH diambil (Status Berjalan)
-     * 2. pemenuhan: Akumulasi penyelesaian terhadap total bobot di seluruh kurikulum
-     */
+    // --- OBE LEVEL 2 PURE CALCULATION ---
     const getCplStats = (mhsId, cplCode) => {
         const maps = database.mappingCpmk.filter(m => String(m.cpl).trim() === String(cplCode).trim());
         let totalBobotAll = 0, totalBobotTaken = 0, totalScore = 0;
@@ -626,63 +519,42 @@
         maps.forEach(map => {
             const weight = parseFloat(map.bobot) || 0; 
             totalBobotAll += weight;
-            
             const n = database.nilaiCpmk.find(x => String(x.mhs).trim() === String(mhsId).trim() && String(x.mk).trim() === String(map.mk).trim() && String(x.cpmk).trim() === String(map.cpmk).trim());
-            if (n && parseFloat(n.nilai) > 0) { 
+            if (n && n.nilai !== undefined && n.nilai !== null && n.nilai !== "") { 
                 totalBobotTaken += weight; 
                 totalScore += (parseFloat(n.nilai) * weight); 
             }
         });
 
-        // Performa = Kualitas (Score) dari MK yang sudah diambil
         const performa = totalBobotTaken > 0 ? (totalScore / totalBobotTaken) : 0;
-        // Pemenuhan = Penyelesaian total terhadap seluruh MK dalam kurikulum yang menopang CPL ini
         const pemenuhan = totalBobotAll > 0 ? (totalScore / totalBobotAll) : 0;
-        // Progres = Presentase bobot MK yang sudah diambil dari total yang ditargetkan
         const progres = totalBobotAll > 0 ? (totalBobotTaken / totalBobotAll) * 100 : 0;
-
         return { performa, pemenuhan, progres, totalBobotTaken };
     };
 
-    /**
-     * getPlScore menghitung capaian Profil Lulusan berdasar bobot mapping CPL yang terafiliasi.
-     * [UPDATE OBE EXPERT]: Perbaikan inflasi progres dan penambahan aturan Threshold ketat.
-     */
     const getPlScore = (mhsId, plCode) => {
         const maps = database.mappingCplProfil.filter(m => String(m.profil).trim() === String(plCode).trim());
-        let totalBobotAll = 0, totalBobotTaken = 0;
-        let totalScorePerforma = 0, totalScorePemenuhan = 0, totalProgresCpl = 0;
-        let isStrictMet = true; // Aturan OBE: Semua CPL pendukung harus capai target
-        let hasData = false;
+        let totalBobotAll = 0, totalBobotTaken = 0, totalScorePerforma = 0, totalScorePemenuhan = 0, totalProgresCpl = 0, isStrictMet = true, hasData = false;
         
         maps.forEach(map => {
             const weight = parseFloat(map.bobot) || 0;
             totalBobotAll += weight;
-            
             const cplStats = getCplStats(mhsId, map.cpl); 
             const targetCpl = database.cpl.find(c => c.kode === map.cpl)?.target || 0;
-            
-            if(cplStats.totalBobotTaken > 0) {
-                hasData = true;
-                totalBobotTaken += weight; // Digunakan untuk pembagi performa berjalan
-                totalScorePerforma += (cplStats.performa * weight);
+            if(cplStats.totalBobotTaken > 0) { 
+                hasData = true; 
+                totalBobotTaken += weight; 
+                totalScorePerforma += (cplStats.performa * weight); 
             }
-            
-            // Kalkulasi akumulasi murni (menghindari bug inflasi progres)
             totalScorePemenuhan += (cplStats.pemenuhan * weight);
             totalProgresCpl += (cplStats.progres * weight);
-
-            // Strict Threshold: Jika performa CPL ini di bawah target minimum, PL dianggap belum aman
-            if (cplStats.performa < targetCpl) {
-                isStrictMet = false;
-            }
+            if (cplStats.performa < targetCpl) { isStrictMet = false; }
         });
 
         const performa = totalBobotTaken > 0 ? (totalScorePerforma / totalBobotTaken) : 0;
         const pemenuhan = totalBobotAll > 0 ? (totalScorePemenuhan / totalBobotAll) : 0;
         const progres = totalBobotAll > 0 ? (totalProgresCpl / totalBobotAll) : 0;
-
-        return { performa, pemenuhan, progres, isStrictMet: (hasData && isStrictMet) };
+        return { performa, pemenuhan, progres, isStrictMet: (hasData && isStrictMet), hasData };
     };
 
     const getMkScore = (mhsId, mkCode) => {
@@ -692,7 +564,7 @@
             const b = database.bobotCpmk.find(x => String(x.mk).trim() === String(mkCode).trim() && String(x.cpmk).trim() === String(c.kode).trim());
             const weight = b ? (parseFloat(b.bobot) || 0) : 0;
             const n = database.nilaiCpmk.find(x => String(x.mhs).trim() === String(mhsId).trim() && String(x.mk).trim() === String(mkCode).trim() && String(x.cpmk).trim() === String(c.kode).trim());
-            if (n) totalScore += (parseFloat(n.nilai) || 0) * (weight / 100);
+            if (n && n.nilai !== undefined) totalScore += (parseFloat(n.nilai) || 0) * (weight / 100);
             totalWeight += weight;
         });
         if(totalWeight === 0 && cpmks.length > 0) {
@@ -789,6 +661,8 @@
 
     // --- RENDER PAGES ---
     function renderAdminDashboard() {
+        if(window.Chart) { Object.values(window.Chart.instances).forEach(chart => chart.destroy()); }
+
         document.getElementById('page-title').innerText = "Beranda Admin"; document.getElementById('page-desc').innerText = "Ikhtisar mutu dan pemenuhan kurikulum Program Studi.";
         const container = document.getElementById('content-view');
 
@@ -797,7 +671,10 @@
         
         let chartDataPerforma = database.cpl.map(cpl => {
             let sum = 0; let count = 0;
-            mhsList.forEach(mhs => { let stats = getCplStats(mhs.username, cpl.kode); if(stats.performa > 0) { sum += stats.performa; count++; } });
+            mhsList.forEach(mhs => { 
+                let stats = getCplStats(mhs.username, cpl.kode); 
+                if(stats.totalBobotTaken > 0) { sum += stats.performa; count++; } 
+            });
             return count > 0 ? parseFloat((sum/count).toFixed(1)) : 0;
         });
         
@@ -808,7 +685,10 @@
         container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"><div class="bg-white p-7 rounded-[2rem] card-shadow border border-gray-100 relative overflow-hidden"><div class="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-brand-soft rounded-full opacity-50"></div><p class="text-gray-400 text-xs font-bold uppercase tracking-widest relative z-10">Total Mahasiswa</p><h3 class="text-4xl font-black text-gray-900 mt-2 mb-3 relative z-10">${mhsList.length}</h3><div class="text-brand-light text-xs font-bold flex items-center relative z-10"><i class="fas fa-users mr-1.5"></i> Terdaftar Aktif</div></div><div class="bg-white p-7 rounded-[2rem] card-shadow border border-gray-100 relative overflow-hidden"><div class="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-brand-soft rounded-full opacity-50"></div><p class="text-gray-400 text-xs font-bold uppercase tracking-widest relative z-10">Total Mata Kuliah</p><h3 class="text-4xl font-black text-gray-900 mt-2 mb-3 relative z-10">${database.mk.length}</h3><div class="text-brand text-xs font-bold flex items-center relative z-10"><i class="fas fa-book mr-1.5"></i> Kurikulum</div></div><div class="bg-white p-7 rounded-[2rem] card-shadow border border-gray-100 relative overflow-hidden"><div class="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-brand-soft rounded-full opacity-50"></div><p class="text-gray-400 text-xs font-bold uppercase tracking-widest relative z-10">Rata-rata Kualitas Prodi</p><h3 class="text-4xl font-black text-gray-900 mt-2 mb-3 relative z-10">${overallAvg}<span class="text-xl font-bold text-gray-400 ml-1">%</span></h3><div class="text-green-500 text-xs font-bold flex items-center relative z-10"><i class="fas fa-chart-line mr-1.5"></i> Performa CPL Berjalan</div></div></div><div class="bg-white p-8 rounded-[2rem] card-shadow border border-gray-100 flex flex-col"><h4 class="font-extrabold text-gray-900 mb-6 text-lg">Performa Berjalan vs Target CPL (%)</h4><div class="relative w-full h-80"><canvas id="mainChart"></canvas></div></div>`;
         
         setTimeout(()=>{
-            new Chart(document.getElementById('mainChart').getContext('2d'), { type: 'bar', data: { labels: chartLabels.length > 0 ? chartLabels : ['Belum ada CPL'], datasets: [{ label: 'Rata-rata Performa Kualitas (%)', data: chartDataPerforma.length > 0 ? chartDataPerforma : [0], backgroundColor: '#007bff', borderRadius: 8 }, { label: 'Target Minimal (%)', data: chartTargetData.length > 0 ? chartTargetData : [0], backgroundColor: 'rgba(11, 29, 74, 0.15)', borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100, grid: { borderDash: [4, 4] } }, x: { grid: { display: false } } }, plugins: { legend: { display: true, position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } } } });
+            const chartEl = document.getElementById('mainChart');
+            if (chartEl) {
+                new Chart(chartEl.getContext('2d'), { type: 'bar', data: { labels: chartLabels.length > 0 ? chartLabels : ['Belum ada CPL'], datasets: [{ label: 'Rata-rata Performa Kualitas (%)', data: chartDataPerforma.length > 0 ? chartDataPerforma : [0], backgroundColor: '#007bff', borderRadius: 8 }, { label: 'Target Minimal (%)', data: chartTargetData.length > 0 ? chartTargetData : [0], backgroundColor: 'rgba(11, 29, 74, 0.15)', borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100, grid: { borderDash: [4, 4] } }, x: { grid: { display: false } } }, plugins: { legend: { display: true, position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } } } });
+            }
         }, 150);
     }
 
@@ -907,8 +787,6 @@
     }
 
     function saveMappingCpmkCpl() {
-        const btn = document.getElementById('btn-save-cpmkcpl'); 
-        // OPTIMISTIC UI: Instantly update without setTimeout delay
         const checkboxes = document.querySelectorAll('.mapping-cpmkcpl-chk'); let newMappingCpmk = [];
         checkboxes.forEach(chk => {
             if(chk.checked) {
@@ -922,8 +800,6 @@
     }
 
     function saveMappingCplProfil() {
-        const btn = document.getElementById('btn-save-cplprof'); 
-        // OPTIMISTIC UI: Instantly update without setTimeout delay
         const checkboxes = document.querySelectorAll('.mapping-cplprof-chk'); let newMapping = [];
         checkboxes.forEach(chk => {
             if(chk.checked) {
@@ -968,7 +844,7 @@
             let tdCpmk = '';
             activeCpmks.forEach(c => {
                 const n = database.nilaiCpmk.find(x => x.mhs === mhsObj.username && x.mk === currentSelectedMkNilai && x.cpmk === c.kode);
-                tdCpmk += `<td class="px-5 py-4 text-center font-bold text-sm ${n ? 'text-gray-900' : 'text-gray-300'}">${n ? n.nilai : '-'}</td>`;
+                tdCpmk += `<td class="px-5 py-4 text-center font-bold text-sm ${n ? 'text-gray-900' : 'text-gray-300'}">${(n && n.nilai !== undefined) ? n.nilai : '-'}</td>`;
             });
             const finalMkScore = getMkScore(mhsObj.username, currentSelectedMkNilai);
             const hasAnyScore = !!database.nilaiCpmk.find(x => x.mhs === mhsObj.username && x.mk === currentSelectedMkNilai);
@@ -1001,6 +877,8 @@
     }
 
     function renderLaporan(selectedMhs = 'ALL') {
+        if(window.Chart) { Object.values(window.Chart.instances).forEach(chart => chart.destroy()); }
+
         document.getElementById('page-title').innerText = "Laporan Evaluasi OBE"; document.getElementById('page-desc').innerText = "Analisis Capaian Pembelajaran Lulusan (CPL) dan Profil Lulusan (PL).";
         const container = document.getElementById('content-view');
 
@@ -1035,6 +913,8 @@
 
         targetMhsList.forEach(mhs => {
             let rowHtml = `<td class="px-5 py-4 font-mono text-sm text-gray-500 sticky left-0 bg-white border-r border-gray-100 z-10 align-middle">${mhs.username}</td><td class="px-5 py-4 text-sm font-bold text-gray-800 align-middle">${mhs.name}</td>`;
+            
+            // Kolom CPL (Yang sudah ada)
             database.cpl.forEach(cpl => {
                 let stats = getCplStats(mhs.username, cpl.kode); 
                 let cplScore = stats.performa;
@@ -1049,12 +929,30 @@
                     </div>
                 </td>`;
             });
-            tableRows += `<tr class="border-b border-gray-50 hover:bg-gray-50/50 transition">${rowHtml}</tr>`;
+
+            // FIX: Tambahan Kolom Profil Lulusan (PL) di akhir setiap baris mahasiswa
+            let tdPl = '';
+            database.profilLulusan.forEach(pl => {
+                let stats = getPlScore(mhs.username, pl.kode);
+                let color = stats.isStrictMet ? 'text-brand' : (stats.performa > 0 ? 'text-yellow-600' : 'text-gray-300');
+                // Menggunakan indikator Strict Met (Memenuhi Syarat Ketat)
+                let icon = stats.isStrictMet ? '<i class="fas fa-check-circle ml-1 text-green-500" title="Memenuhi Syarat Ketat PL"></i>' : '';
+                
+                tdPl += `<td class="px-5 py-4 text-center align-middle border-l-2 border-brand/20 bg-brand-soft/20">
+                    <div class="font-black text-sm ${color}">${stats.hasData ? stats.performa.toFixed(1) : '-'}${icon}</div>
+                    <div class="text-[9px] text-gray-400 font-bold mt-1 tracking-wider uppercase">Prg: ${stats.hasData ? stats.progres.toFixed(0) : 0}%</div>
+                </td>`;
+            });
+
+            tableRows += `<tr class="border-b border-gray-50 hover:bg-gray-50/50 transition">${rowHtml}${tdPl}</tr>`;
         });
 
         let cplChartDataPerforma = database.cpl.map(cpl => {
             let sum = 0; let count = 0;
-            targetMhsList.forEach(mhs => { let stats = getCplStats(mhs.username, cpl.kode); if(stats.performa > 0) { sum += stats.performa; count++; } });
+            targetMhsList.forEach(mhs => { 
+                let stats = getCplStats(mhs.username, cpl.kode); 
+                if(stats.totalBobotTaken > 0) { sum += stats.performa; count++; } 
+            });
             return count > 0 ? (sum/count).toFixed(1) : 0;
         });
 
@@ -1062,14 +960,19 @@
         
         let plChartDataPerforma = database.profilLulusan.map(pl => {
             let sum = 0; let count = 0;
-            targetMhsList.forEach(mhs => { let s = getPlScore(mhs.username, pl.kode); if(s.performa > 0) { sum += s.performa; count++; } });
+            targetMhsList.forEach(mhs => { 
+                let s = getPlScore(mhs.username, pl.kode); 
+                if(s.hasData) { sum += s.performa; count++; } 
+            });
             return count > 0 ? (sum/count).toFixed(1) : 0;
         });
 
-        // [UPDATE OBE EXPERT]: Mengubah representasi bar ke-2 pada grafik PL menjadi "Progres Penyelesaian" agar lebih informatif
         let plChartDataProgres = database.profilLulusan.map(pl => {
             let sum = 0; let count = 0;
-            targetMhsList.forEach(mhs => { let s = getPlScore(mhs.username, pl.kode); if(s.progres > 0) { sum += s.progres; count++; } });
+            targetMhsList.forEach(mhs => { 
+                let s = getPlScore(mhs.username, pl.kode); 
+                if(s.hasData) { sum += s.progres; count++; } 
+            });
             return count > 0 ? (sum/count).toFixed(1) : 0;
         });
 
@@ -1077,26 +980,33 @@
         let cplAchievedPercentage = database.cpl.length > 0 ? Math.round((achievedCount / database.cpl.length) * 100) : 0;
 
         let thCpl = database.cpl.map(c => `<th class="px-5 py-4 text-center border-l border-gray-100" title="${c.deskripsi}">${c.kode}<br><span class="text-[9px] font-bold text-gray-400">Target: ${c.target || 0}%</span></th>`).join('');
+        // FIX: Tambahan Header Profil Lulusan pada Laporan Matriks
+        let thPl = database.profilLulusan.map(p => `<th class="px-5 py-4 text-center border-l-2 border-brand/20 bg-brand-soft/40" title="${p.deskripsi}"><span class="text-brand-dark">${p.kode}</span><br><span class="text-[9px] font-bold text-brand uppercase tracking-wider">Nilai Akhir PL</span></th>`).join('');
         
         let filterUI = currentUser.role === 'mahasiswa' ? `<div class="bg-white p-7 rounded-[2rem] card-shadow border border-gray-100 flex flex-col justify-center"><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-3"><i class="fas fa-user mr-1 text-brand"></i> Profil Mahasiswa</label><div class="w-full px-4 py-3 rounded-xl border border-brand-soft bg-brand-soft text-sm font-bold text-brand overflow-hidden truncate">${currentUser.username} - ${currentUser.name}</div></div>` : `<div class="bg-white p-7 rounded-[2rem] card-shadow border border-gray-100 flex flex-col justify-center"><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-3"><i class="fas fa-filter mr-1 text-brand"></i> Filter Analisis</label><select class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand outline-none text-sm font-bold text-gray-800 bg-gray-50 cursor-pointer transition" onchange="renderLaporan(this.value)">${mhsOptions}</select></div>`;
 
-        container.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">${filterUI}<div class="bg-gradient-to-br from-brand-blue to-brand-light p-7 rounded-[2rem] shadow-xl shadow-brand-light/20 border border-transparent flex items-center justify-between text-white overflow-hidden relative"><i class="fas fa-chart-pie absolute -right-6 -bottom-6 text-7xl opacity-20 transform rotate-12"></i><div class="relative z-10"><p class="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-1">CPL Memenuhi Target</p><h3 class="text-4xl font-black">${cplAchievedPercentage}<span class="text-lg font-bold text-blue-200 ml-1">%</span></h3></div><button onclick="downloadLaporanCPL()" class="bg-white/20 hover:bg-white/30 backdrop-blur-md px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center border border-white/20 relative z-10 tracking-wide"><i class="fas fa-file-excel mr-2"></i> Ekspor</button></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"><div class="bg-white p-8 rounded-[2rem] card-shadow border border-gray-100"><h4 class="font-extrabold text-gray-900 text-base mb-6 tracking-tight"><i class="fas fa-chart-radar text-brand-light mr-2"></i> Analisis Performa CPL Berjalan</h4><div class="relative h-72 w-full flex justify-center"><canvas id="cplChart"></canvas></div></div><div class="bg-white p-8 rounded-[2rem] card-shadow border border-gray-100"><h4 class="font-extrabold text-gray-900 text-base mb-6 tracking-tight"><i class="fas fa-user-tie text-brand mr-2"></i> Ketercapaian Profil Lulusan (PL)</h4><div class="relative h-72 w-full flex justify-center"><canvas id="plChart"></canvas></div></div></div><div class="bg-white rounded-[2rem] card-shadow border border-gray-100 p-8 overflow-hidden"><h4 class="font-extrabold text-xl text-gray-900 mb-6 tracking-tight"><i class="fas fa-table text-brand-light mr-2"></i> Matriks Performa & Progres Mahasiswa</h4><div class="overflow-x-auto border border-gray-100 rounded-2xl relative shadow-sm custom-scrollbar w-full"><table class="w-full text-left whitespace-nowrap" id="table-laporan-cpl"><thead class="bg-gray-50/90 text-[10px] uppercase tracking-widest text-gray-400 font-extrabold border-b border-gray-100"><tr><th class="px-5 py-5 sticky left-0 bg-gray-50 z-20 border-r border-gray-100">NIM</th><th class="px-5 py-5">Nama Mahasiswa</th>${thCpl}</tr></thead><tbody class="divide-y divide-gray-50/80 bg-white">${tableRows}</tbody></table><p class="text-xs text-gray-400 mt-4 font-medium"><i class="fas fa-info-circle mr-1"></i> Angka menunjukkan kualitas performa CPL berjalan. Baris progres di bawah angka menunjukkan persentase pemenuhan bobot kurikulum.</p></div></div>`;
+        container.innerHTML = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">${filterUI}<div class="bg-gradient-to-br from-brand-blue to-brand-light p-7 rounded-[2rem] shadow-xl shadow-brand-light/20 border border-transparent flex items-center justify-between text-white overflow-hidden relative"><i class="fas fa-chart-pie absolute -right-6 -bottom-6 text-7xl opacity-20 transform rotate-12"></i><div class="relative z-10"><p class="text-[10px] font-bold text-blue-200 uppercase tracking-widest mb-1">CPL Memenuhi Target</p><h3 class="text-4xl font-black">${cplAchievedPercentage}<span class="text-lg font-bold text-blue-200 ml-1">%</span></h3></div><button onclick="downloadLaporanCPL()" class="bg-white/20 hover:bg-white/30 backdrop-blur-md px-5 py-2.5 rounded-xl text-sm font-bold transition flex items-center border border-white/20 relative z-10 tracking-wide"><i class="fas fa-file-excel mr-2"></i> Ekspor</button></div></div><div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8"><div class="bg-white p-8 rounded-[2rem] card-shadow border border-gray-100"><h4 class="font-extrabold text-gray-900 text-base mb-6 tracking-tight"><i class="fas fa-chart-radar text-brand-light mr-2"></i> Analisis Performa CPL Berjalan</h4><div class="relative h-72 w-full flex justify-center"><canvas id="cplChart"></canvas></div></div><div class="bg-white p-8 rounded-[2rem] card-shadow border border-gray-100"><h4 class="font-extrabold text-gray-900 text-base mb-6 tracking-tight"><i class="fas fa-user-tie text-brand mr-2"></i> Ketercapaian Profil Lulusan (PL)</h4><div class="relative h-72 w-full flex justify-center"><canvas id="plChart"></canvas></div></div></div><div class="bg-white rounded-[2rem] card-shadow border border-gray-100 p-8 overflow-hidden"><h4 class="font-extrabold text-xl text-gray-900 mb-6 tracking-tight"><i class="fas fa-table text-brand-light mr-2"></i> Matriks Performa & Progres Mahasiswa</h4><div class="overflow-x-auto border border-gray-100 rounded-2xl relative shadow-sm custom-scrollbar w-full"><table class="w-full text-left whitespace-nowrap" id="table-laporan-cpl"><thead class="bg-gray-50/90 text-[10px] uppercase tracking-widest text-gray-400 font-extrabold border-b border-gray-100"><tr><th class="px-5 py-5 sticky left-0 bg-gray-50 z-20 border-r border-gray-100">NIM</th><th class="px-5 py-5">Nama Mahasiswa</th>${thCpl}${thPl}</tr></thead><tbody class="divide-y divide-gray-50/80 bg-white">${tableRows}</tbody></table><p class="text-xs text-gray-500 mt-5 font-medium leading-relaxed bg-brand-soft/50 p-4 rounded-xl border border-blue-50"><i class="fas fa-info-circle mr-1 text-brand"></i> <strong>Panduan Membaca Matriks:</strong><br>Angka pada kolom CPL menunjukkan kualitas performa berjalan. Baris progres menunjukkan persentase pemenuhan sks/bobot. Pada kolom PL (Profil Lulusan), tanda <i class="fas fa-check-circle text-green-500 mx-1"></i> menunjukkan mahasiswa telah melampaui <strong>semua</strong> target minimal CPL pembentuk Profil tersebut secara mutlak.</p></div></div>`;
 
         setTimeout(() => {
-            new Chart(document.getElementById('cplChart').getContext('2d'), { type: 'radar', data: { labels: cplLabels, datasets: [{ label: 'Performa Kualitas', data: cplChartDataPerforma, backgroundColor: 'rgba(0, 86, 179, 0.15)', borderColor: '#0056b3', pointBackgroundColor: '#0056b3', borderWidth: 2.5 }, { label: 'Target Minimal', data: cplTarget, backgroundColor: 'rgba(248, 113, 113, 0.1)', borderColor: '#f87171', borderDash: [5, 5], pointBackgroundColor: '#f87171', borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100, grid: { color: '#f3f4f6' }, angleLines: { color: '#e5e7eb' } } } } });
+            const cplEl = document.getElementById('cplChart');
+            if(cplEl) {
+                new Chart(cplEl.getContext('2d'), { type: 'radar', data: { labels: cplLabels, datasets: [{ label: 'Performa Kualitas', data: cplChartDataPerforma, backgroundColor: 'rgba(0, 86, 179, 0.15)', borderColor: '#0056b3', pointBackgroundColor: '#0056b3', borderWidth: 2.5 }, { label: 'Target Minimal', data: cplTarget, backgroundColor: 'rgba(248, 113, 113, 0.1)', borderColor: '#f87171', borderDash: [5, 5], pointBackgroundColor: '#f87171', borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100, grid: { color: '#f3f4f6' }, angleLines: { color: '#e5e7eb' } } } } });
+            }
             
-            // Grafik Grouped Bar untuk PL (Performa vs Progres Penyelesaian)
-            new Chart(document.getElementById('plChart').getContext('2d'), { 
-                type: 'bar', 
-                data: { 
-                    labels: plLabels, 
-                    datasets: [
-                        { label: 'Performa Kualitas (%)', data: plChartDataPerforma, backgroundColor: '#112a6a', borderRadius: 6 },
-                        { label: 'Persentase Progres (%)', data: plChartDataProgres, backgroundColor: '#007bff', borderRadius: 6 }
-                    ] 
-                }, 
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100, grid: { borderDash: [4, 4] } }, x: { grid: { display: false } } }, plugins: { legend: { display: true, position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } } } 
-            });
+            const plEl = document.getElementById('plChart');
+            if(plEl) {
+                new Chart(plEl.getContext('2d'), { 
+                    type: 'bar', 
+                    data: { 
+                        labels: plLabels, 
+                        datasets: [
+                            { label: 'Performa Kualitas (%)', data: plChartDataPerforma, backgroundColor: '#112a6a', borderRadius: 6 },
+                            { label: 'Persentase Progres (%)', data: plChartDataProgres, backgroundColor: '#007bff', borderRadius: 6 }
+                        ] 
+                    }, 
+                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100, grid: { borderDash: [4, 4] } }, x: { grid: { display: false } } }, plugins: { legend: { display: true, position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } } } 
+                });
+            }
         }, 150);
     }
 
@@ -1133,8 +1043,6 @@
     };
 
     function saveSettings() {
-        const btn = document.getElementById('btn-save-settings'); 
-        // OPTIMISTIC UI: Update Instantly without setTimeout Delay
         const newData = { id: 1, namaProdi: document.getElementById('f-prodi').value, fakultas: document.getElementById('f-fakultas').value, kaprodi: document.getElementById('f-kaprodi').value, logoUrl: document.getElementById('logo-base64').value };
         if (database.settings.length > 0) database.settings[0] = newData; else database.settings.push(newData);
         backgroundSync('settings'); updateBranding(); showToast("Pengaturan Instansi berhasil disimpan!"); 
@@ -1175,7 +1083,7 @@
             const activeCpmks = database.cpmk.filter(c => c.mk === currentSelectedMkNilai);
             let inputCpmkHtml = activeCpmks.map(c => {
                 const n = isEdit ? database.nilaiCpmk.find(x => x.mhs === editItem.username && x.mk === currentSelectedMkNilai && x.cpmk === c.kode) : null;
-                return `<div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Nilai ${c.kode}</label><input type="number" id="fnilai_${c.kode}" class="w-full px-5 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all fnilai-input" value="${n ? n.nilai : ''}"></div>`;
+                return `<div><label class="block text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Nilai ${c.kode}</label><input type="number" id="fnilai_${c.kode}" class="w-full px-5 py-3 rounded-xl bg-gray-50 border border-gray-100 outline-none focus:ring-2 focus:ring-brand focus:bg-white text-sm font-bold text-gray-800 transition-all fnilai-input" value="${(n && n.nilai !== undefined) ? n.nilai : ''}"></div>`;
             }).join('');
             formHtml = `<div class="space-y-4"><div class="bg-brand-soft p-4 rounded-2xl mb-5 text-sm border border-blue-100"><p class="font-extrabold text-brand tracking-tight mb-1">${isEdit ? editItem.name : '-'}</p><p class="text-brand-light font-semibold text-xs">${currentSelectedMkNilai}</p></div><div class="grid grid-cols-2 gap-5">${inputCpmkHtml}</div></div>`;
         }
@@ -1184,14 +1092,7 @@
         document.getElementById('modal-submit').onclick = () => {
             let targetTable = '';
             if(type === 'mhs' || type === 'dosen') {
-                const newData = { 
-                    id: isEdit ? editItem.id : Date.now(), 
-                    username: document.getElementById('f-user').value, 
-                    name: document.getElementById('f-name').value, 
-                    password: document.getElementById('f-pass').value, 
-                    role: type === 'mhs' ? 'mahasiswa' : 'dosen',
-                    angkatan: type === 'mhs' ? document.getElementById('f-angkatan').value : ''
-                };
+                const newData = { id: isEdit ? editItem.id : Date.now(), username: document.getElementById('f-user').value, name: document.getElementById('f-name').value, password: document.getElementById('f-pass').value, role: type === 'mhs' ? 'mahasiswa' : 'dosen', angkatan: type === 'mhs' ? document.getElementById('f-angkatan').value : '' };
                 if(isEdit) { let idx = database.users.findIndex(u=>u.username===editItem.username); database.users[idx]=newData; } else database.users.unshift(newData); targetTable = 'users';
             } else if(type === 'profil') {
                 const newData = { kode: document.getElementById('f-kode').value, deskripsi: document.getElementById('f-desc').value };
@@ -1209,9 +1110,12 @@
                 const nim = String(editItem.username).trim(); const mkTarget = String(currentSelectedMkNilai).trim();
                 const activeCpmks = database.cpmk.filter(c => c.mk === mkTarget);
                 activeCpmks.forEach(c => {
-                    const score = parseFloat(document.getElementById(`fnilai_${c.kode}`).value) || 0;
+                    const val = document.getElementById(`fnilai_${c.kode}`).value;
                     database.nilaiCpmk = database.nilaiCpmk.filter(n => !(n.mhs === nim && n.mk === mkTarget && n.cpmk === c.kode));
-                    database.nilaiCpmk.push({ id: Date.now()+Math.random(), mhs: nim, mk: mkTarget, cpmk: c.kode, nilai: score });
+                    if (val !== "") {
+                        const score = parseFloat(val) || 0;
+                        database.nilaiCpmk.push({ id: Date.now()+Math.random(), mhs: nim, mk: mkTarget, cpmk: c.kode, nilai: score });
+                    }
                 });
                 targetTable = 'nilaiCpmk';
             }
